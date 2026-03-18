@@ -55,3 +55,41 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: PostgreSQL 16 Docker Setup
+
+**Date**: 2026-03-18
+**Task**: PostgreSQL 16 Docker Setup
+
+### Summary
+
+Added a local PostgreSQL 16 Docker Compose setup and verified the container is healthy.
+
+### Main Changes
+
+| Category | Description |
+|----------|-------------|
+| Docker setup | Added `compose.yaml` with PostgreSQL 16, persistent volume, healthcheck, and configurable env vars |
+| Env defaults | Added `.env.example` with local default database settings |
+| Docs | Added startup, shutdown, inspection, and connection instructions to `README.md` |
+| Verification | Verified `docker compose config`, container startup, and `pg_isready` health check |
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c00fe7a` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
