@@ -1,5 +1,7 @@
 export const ROUTES = {
-  DASHBOARD: "/",
+  LANDING: "/",
+  AUTH_CALLBACK: "/auth/callback",
+  DASHBOARD: "/dashboard",
   TRADES: "/trades",
   TRADE_DETAIL: "/trades/:id",
   IMPORT: "/import",
