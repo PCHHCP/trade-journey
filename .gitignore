@@ -1,6 +1,9 @@
 # IDE
 .idea/
 .vscode/
+.claude/
+.cursor/
+.trellis/
 
 # OS
 .DS_Store
