@@ -1,4 +1,6 @@
-# Web Journey
+# Tyche
+
+Trading journal web application.
 
 ## Local PostgreSQL 16
 
@@ -16,7 +18,7 @@ The default connection settings are:
 
 - Host: `localhost`
 - Port: `5432`
-- Database: `web_journey`
+- Database: `tyche`
 - User: `postgres`
 - Password: `postgres`
 
@@ -43,7 +45,7 @@ docker compose up -d
 docker compose down
 docker compose down -v
 docker compose logs -f postgres
-docker compose exec postgres psql -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DB:-web_journey}"
+docker compose exec postgres psql -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DB:-tyche}"
 ```
 
 ### Notes

@@ -1,12 +1,13 @@
+name: tyche
 services:
   postgres:
     image: postgres:16
-    container_name: ${POSTGRES_CONTAINER_NAME:-web-journey-postgres}
+    container_name: ${POSTGRES_CONTAINER_NAME:-tyche-postgres}
     restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-web_journey}
+      POSTGRES_DB: ${POSTGRES_DB:-tyche}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     volumes:
@@ -15,7 +16,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-web_journey}",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tyche}",
         ]
       interval: 10s
       timeout: 5s

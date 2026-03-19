@@ -1,6 +1,7 @@
 import { Navigate } from "react-router";
 import { useAuthStore } from "@/stores/authStore";
 import { ROUTES } from "@/config/routes";
+import { Header } from "@/components/layout/Header";
 import type { ReactNode } from "react";
 
 interface ProtectedRouteProps {
@@ -23,5 +24,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to={ROUTES.LANDING} replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      {children}
+    </div>
+  );
 }

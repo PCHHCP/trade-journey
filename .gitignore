@@ -21,8 +21,13 @@ venv/
 
 # Node
 node_modules/
+
+# Environment variables (all .env files except .env.example templates)
 .env
 .env.local
+.env.development
+.env.production
+.env.staging
 
 # Docker
 docker-compose.override.yml
