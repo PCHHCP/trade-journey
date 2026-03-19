@@ -45,19 +45,40 @@ function GoogleIcon() {
   );
 }
 
+function getAuthErrorMessage(error: { message: string; code?: string }) {
+  const normalizedMessage = error.message.toLowerCase();
+
+  if (
+    error.code === "email_not_confirmed" ||
+    normalizedMessage.includes("email not confirmed")
+  ) {
+    return "该邮箱尚未完成验证，当前无法登录。请重新注册并前往邮箱完成验证。";
+  }
+
+  return error.message;
+}
+
 interface LoginDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  authMessage?: string | null;
+  onAuthMessageDismiss?: () => void;
 }
 
-export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
+export function LoginDialog({
+  open,
+  onOpenChange,
+  authMessage = null,
+  onAuthMessageDismiss,
+}: LoginDialogProps) {
   const navigate = useNavigate();
-  const [view, setView] = useState<"login" | "register" | "registered">(
-    "login",
-  );
+  const [view, setView] = useState<
+    "login" | "register" | "registered" | "verify-email"
+  >("login");
   const [error, setError] = useState<string | null>(null);
   const [oauthLoading, setOauthLoading] = useState(false);
   const [countdown, setCountdown] = useState(3);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingCredentialsRef = useRef<{
     email: string;
@@ -89,10 +110,14 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   function resetForms() {
     loginForm.reset();
     registerForm.reset();
+    pendingCredentialsRef.current = null;
+    setPendingVerificationEmail("");
     setError(null);
   }
 
-  function switchView(newView: "login" | "register" | "registered") {
+  function switchView(
+    newView: "login" | "register" | "registered" | "verify-email",
+  ) {
     resetForms();
     setView(newView);
   }
@@ -114,7 +139,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     });
     pendingCredentialsRef.current = null;
     if (loginError) {
-      setError(loginError.message);
+      setError(getAuthErrorMessage(loginError));
       setView("login");
       setCountdown(3);
     } else {
@@ -183,7 +208,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       password: values.password,
     });
     if (loginError) {
-      setError(loginError.message);
+      setError(getAuthErrorMessage(loginError));
     } else {
       onOpenChange(false);
       setView("login");
@@ -217,10 +242,15 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
         password: values.password,
       };
       setView("registered");
-    } else {
+    } else if (data.session) {
       onOpenChange(false);
       setView("login");
       resetForms();
+      void navigate(ROUTES.DASHBOARD);
+    } else {
+      registerForm.reset();
+      setPendingVerificationEmail(values.email);
+      setView("verify-email");
     }
   }
 
@@ -228,6 +258,10 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     login: { title: "登录", description: "登录你的账号以继续" },
     register: { title: "注册", description: "创建一个新账号" },
     registered: { title: "提示", description: "该邮箱已注册" },
+    "verify-email": {
+      title: "查收验证邮件",
+      description: "注册成功，请先完成邮箱验证",
+    },
   } as const;
 
   return (
@@ -241,7 +275,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
         }
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" showCloseButton={!authMessage}>
         <DialogHeader>
           <DialogTitle>{viewConfig[view].title}</DialogTitle>
           <DialogDescription>{viewConfig[view].description}</DialogDescription>
@@ -285,6 +319,23 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             </div>
           )}
 
+          {authMessage && (
+            <div className="grid gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-3 text-sm text-amber-700">
+              <p>{authMessage}</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  onAuthMessageDismiss?.();
+                  onOpenChange(false);
+                }}
+              >
+                我知道了
+              </Button>
+            </div>
+          )}
+
           {view === "registered" ? (
             <div className="grid gap-4 text-center">
               <div className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-4 py-3 text-sm text-blue-700">
@@ -295,6 +346,23 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               </p>
               <Button onClick={() => void handleRegisteredRedirect()}>
                 确定
+              </Button>
+            </div>
+          ) : view === "verify-email" ? (
+            <div className="grid gap-4">
+              <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700">
+                验证邮件已发送至
+                <span className="ml-1 font-medium">
+                  {pendingVerificationEmail}
+                </span>
+                。
+              </div>
+              <div className="grid gap-2 text-sm text-muted-foreground">
+                <p>请前往邮箱点击验证链接</p>
+                <p>如果几分钟内没有收到邮件，请检查垃圾箱或广告邮件分类。</p>
+              </div>
+              <Button type="button" onClick={() => switchView("login")}>
+                返回登录
               </Button>
             </div>
           ) : view === "login" ? (

@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ROUTES } from "@/config/routes";
+import { useAuthMe } from "@/hooks/useAuthMe";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import { Landing } from "@/routes/Landing";
@@ -16,9 +17,27 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
-function AuthListener({ children }: { children: React.ReactNode }) {
+function AuthListener({ children }: { children: ReactNode }) {
+  const session = useAuthStore((state) => state.session);
   const setSession = useAuthStore((state) => state.setSession);
+  const setBackendUser = useAuthStore((state) => state.setBackendUser);
   const setLoading = useAuthStore((state) => state.setLoading);
+  const authMeQuery = useAuthMe({
+    enabled: session !== null,
+    userId: session?.user.id,
+  });
+
+  useEffect(() => {
+    if (authMeQuery.data) {
+      setBackendUser(authMeQuery.data);
+    }
+  }, [authMeQuery.data, setBackendUser]);
+
+  useEffect(() => {
+    if (authMeQuery.error) {
+      setBackendUser(null);
+    }
+  }, [authMeQuery.error, setBackendUser]);
 
   useEffect(() => {
     if (!supabase) {
