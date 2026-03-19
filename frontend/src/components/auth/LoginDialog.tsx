@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
@@ -52,9 +52,17 @@ interface LoginDialogProps {
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   const navigate = useNavigate();
-  const [view, setView] = useState<"login" | "register">("login");
+  const [view, setView] = useState<"login" | "register" | "registered">(
+    "login",
+  );
   const [error, setError] = useState<string | null>(null);
   const [oauthLoading, setOauthLoading] = useState(false);
+  const [countdown, setCountdown] = useState(3);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pendingCredentialsRef = useRef<{
+    email: string;
+    password: string;
+  } | null>(null);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -84,10 +92,62 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     setError(null);
   }
 
-  function switchView(newView: "login" | "register") {
+  function switchView(newView: "login" | "register" | "registered") {
     resetForms();
     setView(newView);
   }
+
+  const handleRegisteredRedirect = useCallback(async () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    const credentials = pendingCredentialsRef.current;
+    if (!credentials || !supabase) {
+      setView("login");
+      setCountdown(3);
+      return;
+    }
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
+    pendingCredentialsRef.current = null;
+    if (loginError) {
+      setError(loginError.message);
+      setView("login");
+      setCountdown(3);
+    } else {
+      onOpenChange(false);
+      setView("login");
+      loginForm.reset();
+      registerForm.reset();
+      setError(null);
+      setCountdown(3);
+      void navigate(ROUTES.DASHBOARD);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loginForm/registerForm are stable refs from useForm
+  }, [navigate, onOpenChange]);
+
+  useEffect(() => {
+    if (view !== "registered") return;
+    setCountdown(3);
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          void handleRegisteredRedirect();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [view, handleRegisteredRedirect]);
 
   async function handleGoogleAuth() {
     setError(null);
@@ -139,7 +199,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       return;
     }
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -148,12 +208,27 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     });
     if (signUpError) {
       setError(signUpError.message);
+    } else if (
+      data.user &&
+      (!data.user.identities || data.user.identities.length === 0)
+    ) {
+      pendingCredentialsRef.current = {
+        email: values.email,
+        password: values.password,
+      };
+      setView("registered");
     } else {
       onOpenChange(false);
       setView("login");
       resetForms();
     }
   }
+
+  const viewConfig = {
+    login: { title: "登录", description: "登录你的账号以继续" },
+    register: { title: "注册", description: "创建一个新账号" },
+    registered: { title: "提示", description: "该邮箱已注册" },
+  } as const;
 
   return (
     <Dialog
@@ -168,10 +243,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{view === "login" ? "登录" : "注册"}</DialogTitle>
-          <DialogDescription>
-            {view === "login" ? "登录你的账号以继续" : "创建一个新账号"}
-          </DialogDescription>
+          <DialogTitle>{viewConfig[view].title}</DialogTitle>
+          <DialogDescription>{viewConfig[view].description}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
@@ -182,22 +255,29 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             </div>
           )}
 
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogleAuth}
-            disabled={isBusy || !isSupabaseConfigured}
-          >
-            <GoogleIcon />
-            {view === "login" ? "使用 Google 登录" : "使用 Google 注册"}
-          </Button>
+          {view === "login" && (
+            <>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleAuth}
+                disabled={isBusy || !isSupabaseConfigured}
+              >
+                <GoogleIcon />
+                使用 Google 登录
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                首次使用 Google 登录将自动创建账号
+              </p>
 
-          <div className="relative flex items-center justify-center">
-            <Separator className="absolute w-full" />
-            <span className="relative bg-background px-2 text-xs text-muted-foreground">
-              或
-            </span>
-          </div>
+              <div className="relative flex items-center justify-center">
+                <Separator className="absolute w-full" />
+                <span className="relative bg-background px-2 text-xs text-muted-foreground">
+                  或
+                </span>
+              </div>
+            </>
+          )}
 
           {error && (
             <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -205,7 +285,19 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             </div>
           )}
 
-          {view === "login" ? (
+          {view === "registered" ? (
+            <div className="grid gap-4 text-center">
+              <div className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-4 py-3 text-sm text-blue-700">
+                该邮箱已注册，将自动为您登录并跳转...
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {countdown} 秒后自动跳转
+              </p>
+              <Button onClick={() => void handleRegisteredRedirect()}>
+                确定
+              </Button>
+            </div>
+          ) : view === "login" ? (
             <form
               onSubmit={loginForm.handleSubmit((values) => {
                 void handleLoginSubmit(values);
