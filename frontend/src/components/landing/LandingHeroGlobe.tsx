@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import createGlobe from "cobe";
 import type { Globe, Marker } from "cobe";
 
@@ -39,9 +39,6 @@ const GLOBE_MARKERS: GlobeMarker[] = [
   },
 ];
 
-const GLOBE_REVEAL_DELAY_MS = 220;
-const GLOBE_REVEAL_DURATION_MS = 520;
-
 function getMarkerAnchorStyle(
   markerId: string,
 ): CSSProperties & { positionAnchor: string } {
@@ -71,7 +68,7 @@ function getTooltipAnchorStyle(
 
 export function LandingHeroGlobe() {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasHostRef = useRef<HTMLDivElement | null>(null);
   const globeRef = useRef<Globe | null>(null);
   const phiRef = useRef(0);
   const sizeRef = useRef(0);
@@ -87,12 +84,17 @@ export function LandingHeroGlobe() {
   });
   const [size, setSize] = useState(0);
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null);
-  const [isGlobeVisible, setIsGlobeVisible] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) {
       return;
+    }
+
+    const initialSize = Math.round(container.clientWidth);
+    if (initialSize > 0 && sizeRef.current !== initialSize) {
+      sizeRef.current = initialSize;
+      setSize(initialSize);
     }
 
     const observer = new ResizeObserver(([entry]) => {
@@ -102,7 +104,6 @@ export function LandingHeroGlobe() {
       }
 
       sizeRef.current = nextSize;
-      setIsGlobeVisible(false);
       setSize(nextSize);
     });
 
@@ -113,25 +114,27 @@ export function LandingHeroGlobe() {
     };
   }, []);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || size === 0) {
+  useLayoutEffect(() => {
+    const canvasHost = canvasHostRef.current;
+    if (!canvasHost || size === 0) {
       return;
     }
 
-    const renderSize = Math.round(size * 2);
-    canvas.width = renderSize;
-    canvas.height = renderSize;
+    const renderSize = Math.round(size);
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.className = "block size-full";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvasHost.replaceChildren(canvas);
 
     let frameId = 0;
-    let hasRevealed = false;
-    const startedAt = performance.now();
 
     const globe = createGlobe(canvas, {
       devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
       width: renderSize,
       height: renderSize,
-      phi: 0,
+      phi: phiRef.current,
       theta: 0.22,
       dark: 1,
       diffuse: 1.6,
@@ -142,19 +145,13 @@ export function LandingHeroGlobe() {
       baseColor: [0.78, 0.78, 0.78],
       markerColor: [0.24, 0.56, 1],
       glowColor: [0.36, 0.22, 0.82],
-      opacity: 0,
+      opacity: 1,
       offset: [0, 0],
       markers: GLOBE_MARKERS,
     });
     globeRef.current = globe;
 
-    const rotate = (timestamp: number) => {
-      const elapsed = timestamp - startedAt;
-      const revealProgress = Math.min(
-        Math.max(elapsed - GLOBE_REVEAL_DELAY_MS, 0) / GLOBE_REVEAL_DURATION_MS,
-        1,
-      );
-
+    const rotate = () => {
       if (
         dragStateRef.current.pointerId === null &&
         activeMarkerIdRef.current === null
@@ -162,12 +159,7 @@ export function LandingHeroGlobe() {
         phiRef.current += 0.0015;
       }
 
-      globe.update({ phi: phiRef.current, opacity: revealProgress });
-
-      if (!hasRevealed && revealProgress > 0) {
-        hasRevealed = true;
-        setIsGlobeVisible(true);
-      }
+      globe.update({ phi: phiRef.current });
 
       frameId = window.requestAnimationFrame(rotate);
     };
@@ -180,6 +172,9 @@ export function LandingHeroGlobe() {
         globeRef.current = null;
       }
       globe.destroy();
+      if (canvasHost.isConnected) {
+        canvasHost.replaceChildren();
+      }
     };
   }, [size]);
 
@@ -240,6 +235,7 @@ export function LandingHeroGlobe() {
   return (
     <div className="relative mx-auto flex w-full max-w-[30rem] items-center justify-center">
       <div className="pointer-events-none absolute inset-x-[8%] top-[10%] h-[70%] rounded-full bg-[radial-gradient(circle,_rgba(0,210,106,0.22),_rgba(12,15,20,0)_68%)] blur-3xl" />
+      <div className="pointer-events-none absolute inset-[6%] rounded-full bg-[radial-gradient(circle,_rgba(100,70,255,0.22)_0%,_rgba(74,114,255,0.14)_48%,_rgba(12,15,20,0)_74%)] blur-2xl" />
 
       <div
         ref={containerRef}
@@ -250,20 +246,7 @@ export function LandingHeroGlobe() {
         onPointerCancel={handlePointerEnd}
         style={{ touchAction: "pan-y" }}
       >
-        <canvas
-          ref={canvasRef}
-          aria-hidden="true"
-          className="relative z-10 size-full transition-opacity duration-700 ease-out"
-          style={{
-            width: "100%",
-            height: "100%",
-            opacity: isGlobeVisible ? 1 : 0,
-            visibility: isGlobeVisible ? "visible" : "hidden",
-            filter:
-              "brightness(1.22) contrast(1.2) drop-shadow(0 0 18px rgba(88, 24, 166, 0.24)) drop-shadow(0 0 42px rgba(69, 117, 255, 0.18))",
-            willChange: "opacity",
-          }}
-        />
+        <div ref={canvasHostRef} className="relative z-10 size-full" />
 
         {GLOBE_MARKERS.map((marker) => (
           <button

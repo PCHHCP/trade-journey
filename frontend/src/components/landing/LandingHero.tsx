@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { Wallet } from "lucide-react";
+import { TypeAnimation } from "react-type-animation";
 import { LandingHeroGlobe } from "@/components/landing/LandingHeroGlobe";
 import { Button } from "@/components/ui/button";
 import { MarketTicker } from "@/components/landing/MarketTicker";
@@ -9,74 +9,13 @@ interface LandingHeroProps {
 }
 
 const NAV_ITEMS = ["Markets", "Terminal", "Assets", "Governance"];
-const HERO_TITLE_LINES = ["计划你的交易", "交易你的计划"] as const;
-const TYPEWRITER_INITIAL_DELAY_MS = 240;
-const TYPEWRITER_CHAR_INTERVAL_MS = 120;
-const TYPEWRITER_NEXT_LINE_DELAY_MS = 260;
+const HERO_TITLE_LINES = ["Plan your trade", "trade your plan"] as const;
+const HERO_TYPEWRITER_TEXT = `${HERO_TITLE_LINES[0]}\n\u00A0\u00A0\u00A0${HERO_TITLE_LINES[1]}`;
 
 export function LandingHero({ onLogin }: LandingHeroProps) {
   const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const [typedLengths, setTypedLengths] = useState<number[]>(() =>
-    HERO_TITLE_LINES.map((line) => (prefersReducedMotion ? line.length : 0)),
-  );
-  const [activeLineIndex, setActiveLineIndex] = useState<number | null>(() =>
-    prefersReducedMotion ? null : 0,
-  );
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    let cancelled = false;
-    let timerId = 0;
-    const nextTypedLengths = HERO_TITLE_LINES.map(() => 0);
-
-    const syncState = () => {
-      if (!cancelled) {
-        setTypedLengths([...nextTypedLengths]);
-      }
-    };
-
-    const typeLine = (lineIndex: number) => {
-      if (cancelled) {
-        return;
-      }
-
-      setActiveLineIndex(lineIndex);
-
-      if (nextTypedLengths[lineIndex] < HERO_TITLE_LINES[lineIndex].length) {
-        nextTypedLengths[lineIndex] += 1;
-        syncState();
-        timerId = window.setTimeout(
-          typeLine,
-          TYPEWRITER_CHAR_INTERVAL_MS,
-          lineIndex,
-        );
-        return;
-      }
-
-      if (lineIndex === HERO_TITLE_LINES.length - 1) {
-        setActiveLineIndex(null);
-        return;
-      }
-
-      timerId = window.setTimeout(
-        typeLine,
-        TYPEWRITER_NEXT_LINE_DELAY_MS,
-        lineIndex + 1,
-      );
-    };
-
-    timerId = window.setTimeout(typeLine, TYPEWRITER_INITIAL_DELAY_MS, 0);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timerId);
-    };
-  }, [prefersReducedMotion]);
 
   return (
     <section className="relative flex min-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-white/8 bg-[#0c0f14]/95 shadow-[0_35px_90px_rgba(0,0,0,0.5)] lg:min-h-[calc(100dvh-3.5rem)]">
@@ -91,7 +30,7 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
               type="button"
               onClick={onLogin}
               aria-label="打开登录面板"
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/3 text-white/75 transition hover:border-[#5fe0ff]/40 hover:text-white xl:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/3 text-white/75 transition hover:border-[#5fe0ff]/40 hover:text-white xl:hidden"
             >
               <Wallet className="size-5" />
             </button>
@@ -113,18 +52,10 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
           </nav>
 
           <div className="hidden items-center gap-4 xl:flex">
-            <button
-              type="button"
-              onClick={onLogin}
-              aria-label="打开登录面板"
-              className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/3 text-white/75 transition hover:border-[#5fe0ff]/40 hover:text-white"
-            >
-              <Wallet className="size-5" />
-            </button>
             <Button
               size="lg"
               onClick={onLogin}
-              className="h-12 rounded-none border border-[#5fe0ff]/50 bg-[#38c5ea] px-6 text-xs font-semibold tracking-[0.18em] text-[#03131a] uppercase shadow-[0_0_30px_rgba(56,197,234,0.35)] hover:bg-[#54d6f4]"
+              className="h-12 rounded-2xl border border-[#5fe0ff]/50 bg-[#38c5ea] px-6 text-xs font-semibold tracking-[0.18em] text-[#03131a] uppercase shadow-[0_0_30px_rgba(56,197,234,0.35)] hover:bg-[#54d6f4]"
             >
               Get_Started
             </Button>
@@ -141,36 +72,28 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
             aria-label={HERO_TITLE_LINES.join("，")}
             className="mt-4 max-w-none text-4xl leading-none font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-[3.4rem]"
           >
-            {HERO_TITLE_LINES.map((line, index) => (
-              <span
-                key={line}
-                aria-hidden="true"
-                className={
-                  index === 1
-                    ? "ml-[1.9ch] block whitespace-nowrap sm:ml-[3.1ch]"
-                    : "block whitespace-nowrap"
-                }
-              >
-                <span className="grid w-fit">
-                  <span className="invisible">{line}</span>
-                  <span className="col-start-1 row-start-1">
-                    {line.slice(0, typedLengths[index])}
-                    {activeLineIndex === index ? (
-                      <span
-                        aria-hidden="true"
-                        className="hero-typewriter-caret"
-                      />
-                    ) : null}
-                  </span>
-                </span>
+            {prefersReducedMotion ? (
+              <span aria-hidden="true" className="whitespace-pre-line">
+                {HERO_TYPEWRITER_TEXT}
               </span>
-            ))}
+            ) : (
+              <TypeAnimation
+                aria-hidden="true"
+                sequence={[HERO_TYPEWRITER_TEXT]}
+                wrapper="span"
+                speed={70}
+                repeat={0}
+                cursor
+                preRenderFirstString={false}
+                className="inline-block whitespace-pre-line"
+              />
+            )}
           </h1>
           <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Button
               size="lg"
               onClick={onLogin}
-              className="h-11 min-w-40 rounded-none border border-[#00d26a]/45 bg-[#00d26a] px-6 text-xs font-semibold tracking-[0.18em] text-[#02110a] uppercase shadow-[0_0_35px_rgba(0,210,106,0.2)] hover:bg-[#19e37c]"
+              className="h-11 min-w-40 rounded-2xl border border-[#00d26a]/45 bg-[#38c5ea] px-6 text-xs font-semibold tracking-[0.18em] text-[#02110a] uppercase shadow-[0_0_35px_rgba(0,210,106,0.2)] hover:bg-[#19e37c]"
             >
               Start Trading Log
             </Button>
@@ -182,7 +105,7 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
             <Button
               size="lg"
               onClick={onLogin}
-              className="h-11 w-full rounded-none border border-[#5fe0ff]/50 bg-[#38c5ea] px-6 text-xs font-semibold tracking-[0.18em] text-[#03131a] uppercase shadow-[0_0_30px_rgba(56,197,234,0.35)] hover:bg-[#54d6f4]"
+              className="h-11 w-full rounded-2xl border border-[#5fe0ff]/50 bg-[#38c5ea] px-6 text-xs font-semibold tracking-[0.18em] text-[#03131a] uppercase shadow-[0_0_30px_rgba(56,197,234,0.35)] hover:bg-[#54d6f4]"
             >
               Get_Started
             </Button>
