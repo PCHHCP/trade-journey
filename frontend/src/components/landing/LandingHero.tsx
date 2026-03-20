@@ -1,4 +1,5 @@
 import { Wallet } from "lucide-react";
+import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import { LandingHeroGlobe } from "@/components/landing/LandingHeroGlobe";
 import { Button } from "@/components/ui/button";
@@ -11,14 +12,29 @@ interface LandingHeroProps {
 const NAV_ITEMS = ["Markets", "Terminal", "Assets", "Governance"];
 const HERO_TITLE_LINES = ["Plan your trade", "trade your plan"] as const;
 const HERO_TYPEWRITER_TEXT = `${HERO_TITLE_LINES[0]}\n\u00A0\u00A0\u00A0${HERO_TITLE_LINES[1]}`;
+const HERO_EASE = [0.16, 1, 0.3, 1] as const;
 
 export function LandingHero({ onLogin }: LandingHeroProps) {
   const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sectionInitial = prefersReducedMotion
+    ? false
+    : { opacity: 0, scale: 0.98, y: 20 };
+  const contentInitial = prefersReducedMotion ? false : { opacity: 0, x: -20 };
+  const buttonInitial = prefersReducedMotion ? false : { opacity: 0, y: 20 };
+  const globeInitial = prefersReducedMotion
+    ? false
+    : { opacity: 0, scale: 0.8 };
+  const tickerInitial = prefersReducedMotion ? false : { opacity: 0 };
 
   return (
-    <section className="relative flex min-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-white/8 bg-[#0c0f14]/95 shadow-[0_35px_90px_rgba(0,0,0,0.5)] lg:min-h-[calc(100dvh-3.5rem)]">
+    <motion.section
+      initial={sectionInitial}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: HERO_EASE }}
+      className="relative flex min-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-white/8 bg-[#0c0f14]/95 shadow-[0_35px_90px_rgba(0,0,0,0.5)] lg:min-h-[calc(100dvh-3.5rem)]"
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,210,106,0.16),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.02),_rgba(255,255,255,0))]" />
       <div className="relative border-b border-white/8 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -65,10 +81,18 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
 
       <div className="relative grid flex-1 items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,1fr)] lg:px-8 lg:py-12">
         <div className="flex flex-col justify-center lg:max-w-[36rem] lg:pl-6 xl:pl-10">
-          <p className="text-[3rem] font-semibold tracking-[0.42em] text-[#00d26a]">
+          <motion.p
+            initial={contentInitial}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.8, ease: HERO_EASE }}
+            className="text-[3rem] font-semibold tracking-[0.1em] text-[#00d26a]"
+          >
             Tyche
-          </p>
-          <h1
+          </motion.p>
+          <motion.h1
+            initial={contentInitial}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.8, ease: HERO_EASE }}
             aria-label={HERO_TITLE_LINES.join("，")}
             className="mt-4 max-w-none text-4xl leading-none font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-[3.4rem]"
           >
@@ -88,8 +112,13 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
                 className="inline-block whitespace-pre-line"
               />
             )}
-          </h1>
-          <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          </motion.h1>
+          <motion.div
+            initial={buttonInitial}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.8, ease: HERO_EASE }}
+            className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
+          >
             <Button
               size="lg"
               onClick={onLogin}
@@ -97,10 +126,15 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
             >
               Start Trading Log
             </Button>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <motion.div
+          initial={globeInitial}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 1.2, ease: "easeOut" }}
+          className="flex flex-col gap-4"
+        >
           <div className="flex xl:hidden">
             <Button
               size="lg"
@@ -112,10 +146,16 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
           </div>
 
           <LandingHeroGlobe />
-        </div>
+        </motion.div>
       </div>
 
-      <MarketTicker />
-    </section>
+      <motion.div
+        initial={tickerInitial}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.9, duration: 0.8, ease: HERO_EASE }}
+      >
+        <MarketTicker />
+      </motion.div>
+    </motion.section>
   );
 }
