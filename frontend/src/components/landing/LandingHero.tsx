@@ -7,7 +7,7 @@ interface LandingHeroProps {
   onLogin: () => void;
 }
 
-const NAV_ITEMS = ["Markets", "Terminal", "Assets", "Governance"];
+// const NAV_ITEMS = ["Markets", "Terminal", "Assets", "Governance"];
 const HERO_TITLE_LINES = ["Plan your trade", "trade your plan"] as const;
 const HERO_EASE = [0.16, 1, 0.3, 1] as const;
 
