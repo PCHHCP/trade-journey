@@ -76,7 +76,7 @@ export function App() {
               <Route
                 path={ROUTES.DASHBOARD}
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute hideHeader>
                     <Dashboard />
                   </ProtectedRoute>
                 }

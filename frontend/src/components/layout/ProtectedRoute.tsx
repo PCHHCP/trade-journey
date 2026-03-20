@@ -6,9 +6,10 @@ import type { ReactNode } from "react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
+  hideHeader?: boolean;
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, hideHeader }: ProtectedRouteProps) {
   const session = useAuthStore((state) => state.session);
   const loading = useAuthStore((state) => state.loading);
 
@@ -26,7 +27,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      {!hideHeader && <Header />}
       {children}
     </div>
   );
