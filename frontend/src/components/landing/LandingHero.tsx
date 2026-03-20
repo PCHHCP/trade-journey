@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Wallet } from "lucide-react";
 import { LandingHeroGlobe } from "@/components/landing/LandingHeroGlobe";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,75 @@ interface LandingHeroProps {
 }
 
 const NAV_ITEMS = ["Markets", "Terminal", "Assets", "Governance"];
+const HERO_TITLE_LINES = ["计划你的交易", "交易你的计划"] as const;
+const TYPEWRITER_INITIAL_DELAY_MS = 240;
+const TYPEWRITER_CHAR_INTERVAL_MS = 120;
+const TYPEWRITER_NEXT_LINE_DELAY_MS = 260;
 
 export function LandingHero({ onLogin }: LandingHeroProps) {
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [typedLengths, setTypedLengths] = useState<number[]>(() =>
+    HERO_TITLE_LINES.map((line) => (prefersReducedMotion ? line.length : 0)),
+  );
+  const [activeLineIndex, setActiveLineIndex] = useState<number | null>(() =>
+    prefersReducedMotion ? null : 0,
+  );
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return;
+    }
+
+    let cancelled = false;
+    let timerId = 0;
+    const nextTypedLengths = HERO_TITLE_LINES.map(() => 0);
+
+    const syncState = () => {
+      if (!cancelled) {
+        setTypedLengths([...nextTypedLengths]);
+      }
+    };
+
+    const typeLine = (lineIndex: number) => {
+      if (cancelled) {
+        return;
+      }
+
+      setActiveLineIndex(lineIndex);
+
+      if (nextTypedLengths[lineIndex] < HERO_TITLE_LINES[lineIndex].length) {
+        nextTypedLengths[lineIndex] += 1;
+        syncState();
+        timerId = window.setTimeout(
+          typeLine,
+          TYPEWRITER_CHAR_INTERVAL_MS,
+          lineIndex,
+        );
+        return;
+      }
+
+      if (lineIndex === HERO_TITLE_LINES.length - 1) {
+        setActiveLineIndex(null);
+        return;
+      }
+
+      timerId = window.setTimeout(
+        typeLine,
+        TYPEWRITER_NEXT_LINE_DELAY_MS,
+        lineIndex + 1,
+      );
+    };
+
+    timerId = window.setTimeout(typeLine, TYPEWRITER_INITIAL_DELAY_MS, 0);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timerId);
+    };
+  }, [prefersReducedMotion]);
+
   return (
     <section className="relative flex min-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-white/8 bg-[#0c0f14]/95 shadow-[0_35px_90px_rgba(0,0,0,0.5)] lg:min-h-[calc(100dvh-3.5rem)]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,210,106,0.16),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.02),_rgba(255,255,255,0))]" />
@@ -65,15 +133,38 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
       </div>
 
       <div className="relative grid flex-1 items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,1fr)] lg:px-8 lg:py-12">
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col justify-center lg:max-w-[36rem] lg:pl-6 xl:pl-10">
           <p className="text-[3rem] font-semibold tracking-[0.42em] text-[#00d26a]">
             Tyche
           </p>
-          <h1 className="mt-4 max-w-none text-4xl leading-none font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-[3.4rem]">
-            <span className="block whitespace-nowrap">计划你的交易</span>
-            <span className="ml-[1.9ch] block whitespace-nowrap sm:ml-[3.1ch]">
-              交易你的计划
-            </span>
+          <h1
+            aria-label={HERO_TITLE_LINES.join("，")}
+            className="mt-4 max-w-none text-4xl leading-none font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-[3.4rem]"
+          >
+            {HERO_TITLE_LINES.map((line, index) => (
+              <span
+                key={line}
+                aria-hidden="true"
+                className={
+                  index === 1
+                    ? "ml-[1.9ch] block whitespace-nowrap sm:ml-[3.1ch]"
+                    : "block whitespace-nowrap"
+                }
+              >
+                <span className="grid w-fit">
+                  <span className="invisible">{line}</span>
+                  <span className="col-start-1 row-start-1">
+                    {line.slice(0, typedLengths[index])}
+                    {activeLineIndex === index ? (
+                      <span
+                        aria-hidden="true"
+                        className="hero-typewriter-caret"
+                      />
+                    ) : null}
+                  </span>
+                </span>
+              </span>
+            ))}
           </h1>
           <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Button
