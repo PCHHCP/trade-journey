@@ -1,43 +1,27 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import createGlobe from "cobe";
 import type { Globe, Marker } from "cobe";
+import {
+  LANDING_HERO_MARKETS,
+  type GlobeMarketDefinition,
+} from "@/components/landing/landingHeroMarkets";
 
-interface GlobeMarker extends Marker {
-  id: string;
+interface GlobeMarker extends GlobeMarketDefinition {
   label: string;
-  hoverInfo: string;
+  size: number;
 }
 
-const GLOBE_MARKERS: GlobeMarker[] = [
-  {
-    id: "new-york",
-    label: "New York market",
-    hoverInfo: "展位",
-    location: [40.7128, -74.006],
-    size: 0.05,
-  },
-  {
-    id: "london",
-    label: "London market",
-    hoverInfo: "展位",
-    location: [51.5072, -0.1276],
-    size: 0.05,
-  },
-  {
-    id: "singapore",
-    label: "Singapore market",
-    hoverInfo: "展位",
-    location: [1.3521, 103.8198],
-    size: 0.05,
-  },
-  {
-    id: "tokyo",
-    label: "Tokyo market",
-    hoverInfo: "展位",
-    location: [35.6764, 139.65],
-    size: 0.05,
-  },
-];
+const GLOBE_MARKERS: GlobeMarker[] = LANDING_HERO_MARKETS.map((market) => ({
+  ...market,
+  label: `${market.name} market`,
+  size: 0.05,
+}));
+
+const COBE_MARKERS: Marker[] = GLOBE_MARKERS.map((marker) => ({
+  id: marker.id,
+  location: marker.location,
+  size: marker.size,
+}));
 
 function getMarkerAnchorStyle(
   markerId: string,
@@ -72,6 +56,7 @@ export function LandingHeroGlobe() {
   const globeRef = useRef<Globe | null>(null);
   const phiRef = useRef(0);
   const sizeRef = useRef(0);
+  const isPointerInsideRef = useRef(false);
   const activeMarkerIdRef = useRef<string | null>(null);
   const dragStateRef = useRef<{
     pointerId: number | null;
@@ -147,12 +132,13 @@ export function LandingHeroGlobe() {
       glowColor: [0.36, 0.22, 0.82],
       opacity: 1,
       offset: [0, 0],
-      markers: GLOBE_MARKERS,
+      markers: COBE_MARKERS,
     });
     globeRef.current = globe;
 
     const rotate = () => {
       if (
+        !isPointerInsideRef.current &&
         dragStateRef.current.pointerId === null &&
         activeMarkerIdRef.current === null
       ) {
@@ -234,12 +220,31 @@ export function LandingHeroGlobe() {
 
   return (
     <div className="relative mx-auto flex w-full max-w-[30rem] items-center justify-center">
+      <style>{`
+        @keyframes market-marker-breathe {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.35);
+          }
+        }
+      `}</style>
       <div className="pointer-events-none absolute inset-x-[8%] top-[10%] h-[70%] rounded-full bg-[radial-gradient(circle,_rgba(0,210,106,0.22),_rgba(12,15,20,0)_68%)] blur-3xl" />
       <div className="pointer-events-none absolute inset-[6%] rounded-full bg-[radial-gradient(circle,_rgba(100,70,255,0.22)_0%,_rgba(74,114,255,0.14)_48%,_rgba(12,15,20,0)_74%)] blur-2xl" />
 
       <div
         ref={containerRef}
         className="relative aspect-square w-full max-w-[30rem] cursor-grab active:cursor-grabbing"
+        onPointerEnter={() => {
+          isPointerInsideRef.current = true;
+        }}
+        onPointerLeave={() => {
+          isPointerInsideRef.current = false;
+          if (dragStateRef.current.pointerId === null) {
+            setMarkerActive(null);
+          }
+        }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerEnd}
@@ -253,7 +258,7 @@ export function LandingHeroGlobe() {
             key={marker.id}
             type="button"
             aria-label={marker.label}
-            className="absolute z-20 size-6 rounded-full border-0 bg-transparent p-0 outline-none transition-transform duration-200 hover:scale-110 focus-visible:scale-110"
+            className="absolute z-20 flex size-7 items-center justify-center rounded-full border-0 bg-transparent p-0 outline-none transition-transform duration-200 hover:scale-110 focus-visible:scale-110"
             style={getMarkerAnchorStyle(marker.id)}
             onPointerDown={(event) => {
               event.stopPropagation();
@@ -262,15 +267,30 @@ export function LandingHeroGlobe() {
             onPointerLeave={() => handleMarkerPointerLeave(marker.id)}
             onFocus={() => handleMarkerPointerEnter(marker.id)}
             onBlur={() => handleMarkerPointerLeave(marker.id)}
-          />
+          >
+            <span
+              className="pointer-events-none size-3.5 rounded-full bg-[#8fe8ff] shadow-[0_0_18px_rgba(95,224,255,0.95),0_0_32px_rgba(56,197,234,0.45)] motion-reduce:animate-none"
+              style={{
+                animation: "market-marker-breathe 1.8s ease-in-out infinite",
+              }}
+            />
+          </button>
         ))}
 
         {activeMarker ? (
           <div
-            className="absolute z-30 min-w-20 rounded-full border border-white/14 bg-neutral-950/88 px-3 py-1.5 text-center text-xs font-medium tracking-[0.14em] text-white shadow-[0_16px_40px_rgba(0,0,0,0.32)] backdrop-blur-sm"
+            className="absolute z-30 min-w-[15rem] rounded-2xl border border-white/12 bg-[#071119]/92 px-4 py-3 text-left shadow-[0_18px_50px_rgba(0,0,0,0.38)] backdrop-blur-md"
             style={getTooltipAnchorStyle(activeMarker.id)}
           >
-            {activeMarker.hoverInfo}
+            <p className="text-[0.62rem] font-semibold tracking-[0.28em] text-[#00d26a] uppercase">
+              {activeMarker.code}
+            </p>
+            <p className="mt-1 text-sm font-semibold tracking-[0.01em] text-white">
+              {activeMarker.name}
+            </p>
+            <p className="mt-2 text-[0.68rem] tracking-[0.16em] text-white/70 uppercase">
+              {activeMarker.marketType} / {activeMarker.country}
+            </p>
           </div>
         ) : null}
       </div>
