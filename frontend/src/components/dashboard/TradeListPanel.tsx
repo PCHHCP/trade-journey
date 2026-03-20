@@ -24,11 +24,11 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
           <thead className="text-xs text-slate-400 uppercase bg-[#16171a]/50 border-b border-white/5">
             <tr>
               <th className="px-6 py-4 font-medium">Date</th>
-              <th className="px-6 py-4 font-medium">Asset</th>
+              <th className="px-6 py-4 font-medium">Product</th>
               <th className="px-6 py-4 font-medium">Type</th>
               <th className="px-6 py-4 font-medium text-right">Entry</th>
               <th className="px-6 py-4 font-medium text-right">Exit</th>
-              <th className="px-6 py-4 font-medium text-right">Qty</th>
+              <th className="px-6 py-4 font-medium text-right">Lot</th>
               <th className="px-6 py-4 font-medium text-right">P&L</th>
               <th className="px-6 py-4 font-medium">Notes</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -54,7 +54,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                     {format(parseISO(trade.date), "MMM dd, yyyy")}
                   </td>
                   <td className="px-6 py-4 font-medium text-white">
-                    {trade.asset}
+                    {trade.product}
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -80,7 +80,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                     {formatCurrency(trade.exitPrice)}
                   </td>
                   <td className="px-6 py-4 text-right font-mono text-slate-300">
-                    {trade.quantity}
+                    {trade.lot}
                   </td>
                   <td className="px-6 py-4 text-right font-mono font-medium">
                     <span

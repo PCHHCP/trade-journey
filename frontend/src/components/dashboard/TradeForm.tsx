@@ -1,5 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { format } from "date-fns";
 import { X } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import type { DashboardTrade } from "./types";
 
 interface TradeFormProps {
@@ -8,13 +10,21 @@ interface TradeFormProps {
 }
 
 export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
+
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
-    asset: "",
+    product: "",
     type: "LONG" as "LONG" | "SHORT",
     entryPrice: "",
     exitPrice: "",
-    quantity: "",
+    lot: "",
     notes: "",
   });
 
@@ -23,22 +33,22 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
 
     const entryPrice = parseFloat(formData.entryPrice);
     const exitPrice = parseFloat(formData.exitPrice);
-    const quantity = parseFloat(formData.quantity);
+    const lot = parseFloat(formData.lot);
 
     let pnl = 0;
     if (formData.type === "LONG") {
-      pnl = (exitPrice - entryPrice) * quantity;
+      pnl = (exitPrice - entryPrice) * lot;
     } else {
-      pnl = (entryPrice - exitPrice) * quantity;
+      pnl = (entryPrice - exitPrice) * lot;
     }
 
     onSubmit({
-      date: formData.date,
-      asset: formData.asset.toUpperCase(),
+      date: date ? format(date, "yyyy-MM-dd'T'HH:mm") : format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+      product: formData.product.toUpperCase(),
       type: formData.type,
       entryPrice,
       exitPrice,
-      quantity,
+      lot,
       pnl,
       notes: formData.notes,
     });
@@ -64,28 +74,23 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-300">Date</label>
-              <input
-                type="date"
-                required
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+              <DateTimePicker
+                value={date}
+                onChange={setDate}
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-300">
-                Asset/Pair
+                Product
               </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. BTC/USD"
-                value={formData.asset}
+                placeholder="E.G. BTC/USD"
+                value={formData.product}
                 onChange={(e) =>
-                  setFormData({ ...formData, asset: e.target.value })
+                  setFormData({ ...formData, product: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm uppercase"
               />
@@ -94,29 +99,36 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-300">Type</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="type"
-                  value="LONG"
-                  checked={formData.type === "LONG"}
-                  onChange={() => setFormData({ ...formData, type: "LONG" })}
-                  className="text-indigo-600 focus:ring-indigo-500 bg-[#16171a] border-white/10"
-                />
-                <span className="text-sm text-slate-300">Long</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="type"
-                  value="SHORT"
-                  checked={formData.type === "SHORT"}
-                  onChange={() => setFormData({ ...formData, type: "SHORT" })}
-                  className="text-indigo-600 focus:ring-indigo-500 bg-[#16171a] border-white/10"
-                />
-                <span className="text-sm text-slate-300">Short</span>
-              </label>
+            <div className="relative flex rounded-lg border border-white/10 bg-[#16171a] p-1">
+              <div
+                className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-indigo-600 transition-transform duration-200 ease-in-out"
+                style={{
+                  transform:
+                    formData.type === "SHORT"
+                      ? "translateX(calc(100% + 8px))"
+                      : "translateX(0)",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, type: "LONG" })}
+                className="relative z-10 flex-1 py-2 text-sm font-medium text-center rounded-md transition-colors"
+                style={{
+                  color: formData.type === "LONG" ? "#fff" : "#94a3b8",
+                }}
+              >
+                Long
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, type: "SHORT" })}
+                className="relative z-10 flex-1 py-2 text-sm font-medium text-center rounded-md transition-colors"
+                style={{
+                  color: formData.type === "SHORT" ? "#fff" : "#94a3b8",
+                }}
+              >
+                Short
+              </button>
             </div>
           </div>
 
@@ -127,7 +139,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
               </label>
               <input
                 type="number"
-                step="any"
+                step="0.01"
                 required
                 min="0"
                 placeholder="0.00"
@@ -144,7 +156,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
               </label>
               <input
                 type="number"
-                step="any"
+                step="0.01"
                 required
                 min="0"
                 placeholder="0.00"
@@ -158,18 +170,16 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300">
-              Quantity
-            </label>
+            <label className="text-sm font-medium text-slate-300">Lot</label>
             <input
               type="number"
-              step="any"
+              step="0.01"
               required
               min="0"
               placeholder="1.0"
-              value={formData.quantity}
+              value={formData.lot}
               onChange={(e) =>
-                setFormData({ ...formData, quantity: e.target.value })
+                setFormData({ ...formData, lot: e.target.value })
               }
               className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono"
             />

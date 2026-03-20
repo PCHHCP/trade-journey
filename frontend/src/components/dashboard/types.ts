@@ -1,11 +1,11 @@
 export interface DashboardTrade {
   id: string;
   date: string;
-  asset: string;
+  product: string;
   type: "LONG" | "SHORT";
   entryPrice: number;
   exitPrice: number;
-  quantity: number;
+  lot: number;
   pnl: number;
   notes?: string;
 }
