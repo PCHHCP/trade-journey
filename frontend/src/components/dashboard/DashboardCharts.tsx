@@ -114,7 +114,10 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
                 tickLine={false}
                 tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 tickFormatter={(value: number) =>
-                  formatCurrency(value, language)
+                  formatNumber(value, language, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
                 }
               />
               <Tooltip
@@ -230,7 +233,10 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
                 tickLine={false}
                 tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 tickFormatter={(value: number) =>
-                  formatCurrency(value, language)
+                  formatNumber(value, language, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
                 }
               />
               <Tooltip
