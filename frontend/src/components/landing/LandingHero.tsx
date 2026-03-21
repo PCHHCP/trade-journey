@@ -1,18 +1,21 @@
 import { Wallet } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { LandingHeroGlobe } from "@/components/landing/LandingHeroGlobe";
 import { MarketTicker } from "@/components/landing/MarketTicker";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { useAppLanguage } from "@/hooks/useAppLanguage";
 
 interface LandingHeroProps {
   onLogin: () => void;
 }
 
-// const NAV_ITEMS = ["Markets", "Terminal", "Assets", "Governance"];
-const HERO_TITLE_LINES = ["Plan your trade", "trade your plan"] as const;
 const HERO_EASE = [0.16, 1, 0.3, 1] as const;
 
 export function LandingHero({ onLogin }: LandingHeroProps) {
+  const { t } = useTranslation();
+  const { language } = useAppLanguage();
   const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -21,6 +24,10 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
     ? false
     : { opacity: 0, scale: 0.8 };
   const tickerInitial = prefersReducedMotion ? false : { opacity: 0 };
+  const heroTitleLine1 = t("landing.hero.titleLine1");
+  const heroTitleLine2 = t("landing.hero.titleLine2");
+  const splitLine = (line: string) =>
+    language === "zh-CN" ? [line] : line.split(" ");
 
   return (
     <section className="relative flex min-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-[var(--landing-border)] bg-[var(--landing-shell)] shadow-2xl transition-colors duration-500 lg:min-h-[calc(100dvh-3.5rem)]">
@@ -30,17 +37,21 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="text-xl font-semibold tracking-tight text-[var(--landing-brand)] sm:text-[1.75rem]">
-                Tyche
+                {t("common.brand")}
               </span>
-              <ThemeToggle className="sm:hidden" />
+              <div className="flex items-center gap-2 sm:hidden">
+                <LanguageToggle />
+                <ThemeToggle />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="hidden items-center gap-3 sm:flex xl:hidden">
+              <LanguageToggle />
               <ThemeToggle className="hidden sm:inline-flex" />
             </div>
             <button
               type="button"
               onClick={onLogin}
-              aria-label="打开登录面板"
+              aria-label={t("landing.hero.loginAria")}
               className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--landing-border-strong)] bg-[var(--landing-control-bg)] text-[var(--landing-text-muted)] transition hover:border-[var(--landing-brand)] hover:text-[var(--landing-text)] xl:hidden"
             >
               <Wallet className="size-5" />
@@ -64,15 +75,17 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
             ))}
           </nav> */}
 
-          <div className="hidden items-center gap-4 xl:flex">
+          <div className="hidden items-center gap-3 xl:flex">
+            <LanguageToggle />
+            <ThemeToggle />
             <button
               type="button"
               onClick={onLogin}
-              className="group relative inline-flex h-12 cursor-pointer overflow-hidden rounded-full p-[1px] transition-transform duration-300 hover:scale-105 focus:outline-none"
+              className="group relative inline-flex h-12 w-[11rem] cursor-pointer overflow-hidden rounded-full p-[1px] transition-transform duration-300 hover:scale-105 focus:outline-none"
             >
               <span className="absolute inset-[-1000%] animate-spin bg-[conic-gradient(from_90deg_at_50%_50%,var(--landing-brand)_0%,var(--landing-shell)_50%,var(--landing-brand)_100%)] opacity-70 transition-opacity duration-300 [animation-duration:4s] group-hover:opacity-100" />
               <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-[var(--landing-button-bg)] px-6 py-2 text-xs font-semibold tracking-[0.18em] text-[var(--landing-brand)] uppercase backdrop-blur-3xl transition-all duration-300 group-hover:bg-[var(--landing-button-hover)] group-hover:text-[var(--landing-text)]">
-                Get Start
+                {t("landing.hero.getStarted")}
               </span>
             </button>
           </div>
@@ -136,7 +149,7 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
             }}
             initial={prefersReducedMotion ? false : "hidden"}
             animate="visible"
-            aria-label={HERO_TITLE_LINES.join("，")}
+            aria-label={`${heroTitleLine1} ${heroTitleLine2}`}
             role="heading"
             aria-level={1}
             className="mt-4 max-w-none space-y-2"
@@ -145,7 +158,7 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
               aria-hidden="true"
               className="flex flex-wrap gap-x-3 font-display text-5xl leading-[0.85] uppercase tracking-tight text-[var(--landing-text)] lg:gap-x-4 lg:text-[72px]"
             >
-              {HERO_TITLE_LINES[0].split(" ").map((word, i) => (
+              {splitLine(heroTitleLine1).map((word, i) => (
                 <motion.span
                   key={i}
                   variants={{
@@ -171,7 +184,7 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
               aria-hidden="true"
               className="flex flex-wrap gap-x-3 font-display text-5xl leading-[0.85] uppercase tracking-tight text-[var(--landing-brand)] lg:gap-x-4 lg:text-[72px]"
             >
-              {HERO_TITLE_LINES[1].split(" ").map((word, i) => (
+              {splitLine(heroTitleLine2).map((word, i) => (
                 <motion.span
                   key={i}
                   variants={{
@@ -207,7 +220,7 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
             >
               <span className="absolute inset-[-1000%] animate-spin bg-[conic-gradient(from_90deg_at_50%_50%,var(--landing-brand)_0%,var(--landing-shell)_50%,var(--landing-brand)_100%)] opacity-70 transition-opacity duration-300 [animation-duration:4s] group-hover:opacity-100" />
               <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-[var(--landing-button-bg)] px-10 py-3 text-xs font-semibold tracking-[0.18em] text-[var(--landing-brand)] uppercase backdrop-blur-3xl transition-all duration-300 group-hover:bg-[var(--landing-button-hover)] group-hover:text-[var(--landing-text)]">
-                Start Trading Log
+                {t("landing.hero.startJournal")}
               </span>
             </button>
           </motion.div>
@@ -227,7 +240,7 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
             >
               <span className="absolute inset-[-1000%] animate-spin bg-[conic-gradient(from_90deg_at_50%_50%,var(--landing-brand)_0%,var(--landing-shell)_50%,var(--landing-brand)_100%)] opacity-70 transition-opacity duration-300 [animation-duration:4s] group-hover:opacity-100" />
               <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-[var(--landing-button-bg)] px-6 py-2 text-xs font-semibold tracking-[0.18em] text-[var(--landing-brand)] uppercase backdrop-blur-3xl transition-all duration-300 group-hover:bg-[var(--landing-button-hover)] group-hover:text-[var(--landing-text)]">
-                Ge Start
+                {t("landing.hero.getStarted")}
               </span>
             </button>
           </div>

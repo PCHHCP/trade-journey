@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { ROUTES } from "@/config/routes";
 
@@ -32,6 +33,7 @@ function persistAuthStatus(status: string) {
 }
 
 export function AuthCallback() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -88,7 +90,7 @@ export function AuthCallback() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">正在登录...</p>
+      <p className="text-muted-foreground">{t("auth.callbackLoading")}</p>
     </div>
   );
 }

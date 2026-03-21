@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   subDays,
   startOfMonth,
@@ -16,19 +16,29 @@ import {
   Wallet,
   Filter,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AccountMenu } from "@/components/layout/AccountMenu";
-import { useTheme } from "@/hooks/useTheme";
+import { useAppLanguage } from "@/hooks/useAppLanguage";
+import { useDelayedResolvedTheme } from "@/hooks/useDelayedResolvedTheme";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { TradeListPanel } from "@/components/dashboard/TradeListPanel";
 import { TradeForm } from "@/components/dashboard/TradeForm";
 import { initialTrades } from "@/components/dashboard/mockData";
-import { formatCurrency, formatPercentage } from "@/components/dashboard/utils";
+import { formatCurrency, formatNumber, formatRatioPercent } from "@/lib/locale";
 import type { DashboardTrade, TradeStats } from "@/components/dashboard/types";
 
+const DASHBOARD_BACKGROUND_DELAY_MS = 300;
+
 export function Dashboard() {
-  const { resolvedTheme } = useTheme();
+  const { t } = useTranslation();
+  const { language } = useAppLanguage();
+  const backgroundTheme = useDelayedResolvedTheme(
+    DASHBOARD_BACKGROUND_DELAY_MS,
+  );
   const [trades, setTrades] = useState<DashboardTrade[]>(initialTrades);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<string>("all");
@@ -112,13 +122,24 @@ export function Dashboard() {
   };
 
   const handleDeleteTrade = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this trade?")) {
+    if (window.confirm(t("dashboard.actions.confirmDeleteTrade"))) {
       setTrades(trades.filter((t) => t.id !== id));
     }
   };
 
   return (
-    <div className="min-h-screen bg-[var(--dashboard-shell)] bg-dot-pattern text-foreground">
+    <motion.div
+      className="min-h-screen text-foreground"
+      animate={{
+        backgroundColor: backgroundTheme === "dark" ? "#16171a" : "#f4f7fb",
+        backgroundImage:
+          backgroundTheme === "dark"
+            ? "radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px)"
+            : "radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px)",
+      }}
+      transition={{ duration: 0.5 }}
+      style={{ backgroundPosition: "0 0", backgroundSize: "24px 24px" }}
+    >
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-8">
         {/* Filter Bar */}
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -127,10 +148,11 @@ export function Dashboard() {
               <LineChart className="size-5" />
             </div>
             <h2 className="text-lg font-medium text-foreground">
-              Dashboard Overview
+              {t("dashboard.overviewTitle")}
             </h2>
           </div>
           <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
+            <LanguageToggle />
             <ThemeToggle />
             <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
               <Filter className="size-4 text-muted-foreground" />
@@ -140,22 +162,22 @@ export function Dashboard() {
                 className="cursor-pointer bg-transparent text-sm text-foreground focus:outline-none"
               >
                 <option value="all" className="bg-card text-foreground">
-                  All Time
+                  {t("dashboard.filters.all")}
                 </option>
                 <option value="7d" className="bg-card text-foreground">
-                  Last 7 Days
+                  {t("dashboard.filters.last7Days")}
                 </option>
                 <option value="30d" className="bg-card text-foreground">
-                  Last 30 Days
+                  {t("dashboard.filters.last30Days")}
                 </option>
                 <option value="month" className="bg-card text-foreground">
-                  This Month
+                  {t("dashboard.filters.thisMonth")}
                 </option>
                 <option value="year" className="bg-card text-foreground">
-                  This Year
+                  {t("dashboard.filters.thisYear")}
                 </option>
                 <option value="custom" className="bg-card text-foreground">
-                  Custom Range
+                  {t("dashboard.filters.custom")}
                 </option>
               </select>
             </div>
@@ -167,7 +189,7 @@ export function Dashboard() {
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
                   className="bg-transparent text-sm text-foreground focus:outline-none"
-                  style={{ colorScheme: resolvedTheme }}
+                  style={{ colorScheme: "light dark" }}
                 />
                 <span className="text-muted-foreground">-</span>
                 <input
@@ -175,17 +197,17 @@ export function Dashboard() {
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
                   className="bg-transparent text-sm text-foreground focus:outline-none"
-                  style={{ colorScheme: resolvedTheme }}
+                  style={{ colorScheme: "light dark" }}
                 />
               </div>
             )}
 
             <button
               onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              className="inline-flex w-[9.5rem] shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
             >
               <Plus className="size-4" />
-              Log Trade
+              {t("dashboard.actions.logTrade")}
             </button>
             <AccountMenu compact className="bg-card sm:ml-auto" />
           </div>
@@ -194,32 +216,35 @@ export function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title="Net P&L"
-            value={formatCurrency(stats.totalPnl)}
+            title={t("dashboard.stats.netPnl")}
+            value={formatCurrency(stats.totalPnl, language)}
             icon={<Wallet className="w-5 h-5" />}
             trend={{
               value: stats.totalPnl !== 0 ? 100 : 0,
               isPositive: stats.totalPnl >= 0,
-              label: "All time",
+              label: t("dashboard.stats.allTime"),
             }}
           />
           <StatCard
-            title="Win Rate"
-            value={formatPercentage(stats.winRate)}
+            title={t("dashboard.stats.winRate")}
+            value={formatRatioPercent(stats.winRate, language)}
             icon={<Target className="w-5 h-5" />}
           />
           <StatCard
-            title="Profit Factor"
-            value={stats.profitFactor.toFixed(2)}
+            title={t("dashboard.stats.profitFactor")}
+            value={formatNumber(stats.profitFactor, language, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
             icon={<Activity className="w-5 h-5" />}
             trend={{
               value: stats.profitFactor > 1 ? 100 : 0,
               isPositive: stats.profitFactor >= 1,
-              label: "Gross Profit / Gross Loss",
+              label: t("dashboard.stats.grossProfitOverGrossLoss"),
             }}
           />
           <StatCard
-            title="Total Trades"
+            title={t("dashboard.stats.totalTrades")}
             value={stats.totalTrades}
             icon={<TrendingUp className="w-5 h-5" />}
           />
@@ -232,34 +257,34 @@ export function Dashboard() {
         <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
           <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
             <span className="mb-1 text-sm text-muted-foreground">
-              Average Win
+              {t("dashboard.stats.averageWin")}
             </span>
             <span className="text-xl font-semibold text-emerald-400">
-              {formatCurrency(stats.averageWin)}
+              {formatCurrency(stats.averageWin, language)}
             </span>
           </div>
           <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
             <span className="mb-1 text-sm text-muted-foreground">
-              Average Loss
+              {t("dashboard.stats.averageLoss")}
             </span>
             <span className="text-xl font-semibold text-rose-400">
-              -{formatCurrency(stats.averageLoss)}
+              -{formatCurrency(stats.averageLoss, language)}
             </span>
           </div>
           <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
             <span className="mb-1 text-sm text-muted-foreground">
-              Largest Win
+              {t("dashboard.stats.largestWin")}
             </span>
             <span className="text-xl font-semibold text-emerald-400">
-              {formatCurrency(stats.largestWin)}
+              {formatCurrency(stats.largestWin, language)}
             </span>
           </div>
           <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
             <span className="mb-1 text-sm text-muted-foreground">
-              Largest Loss
+              {t("dashboard.stats.largestLoss")}
             </span>
             <span className="text-xl font-semibold text-rose-400">
-              {formatCurrency(stats.largestLoss)}
+              {formatCurrency(stats.largestLoss, language)}
             </span>
           </div>
         </div>
@@ -275,6 +300,6 @@ export function Dashboard() {
           onSubmit={handleAddTrade}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

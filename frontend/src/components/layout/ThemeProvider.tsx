@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ThemeContext } from "@/components/layout/ThemeContext";
 import type { ResolvedTheme, ThemeMode } from "@/types/theme";
 
@@ -64,8 +64,9 @@ function readStoredTheme() {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeMode>(readStoredTheme);
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    resolveTheme(readStoredTheme(), getSystemTheme()),
+  const resolvedTheme = useMemo(
+    () => resolveTheme(theme, systemTheme),
+    [theme, systemTheme],
   );
 
   useEffect(() => {
@@ -97,10 +98,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    const nextResolvedTheme = resolveTheme(theme, systemTheme);
-    applyResolvedTheme(nextResolvedTheme);
-    setResolvedTheme(nextResolvedTheme);
-  }, [theme, systemTheme]);
+    applyResolvedTheme(resolvedTheme);
+  }, [resolvedTheme, theme]);
 
   return (
     <ThemeContext.Provider

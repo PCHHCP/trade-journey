@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { useAppLanguage } from "@/hooks/useAppLanguage";
+import { formatNumber } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
@@ -20,6 +22,8 @@ export function StatCard({
   trend,
   className,
 }: StatCardProps) {
+  const { language } = useAppLanguage();
+
   return (
     <div
       className={cn(
@@ -45,7 +49,7 @@ export function StatCard({
             )}
           >
             {trend.isPositive ? "+" : "-"}
-            {Math.abs(trend.value)}%
+            {formatNumber(Math.abs(trend.value), language)}%
           </span>
           {trend.label && (
             <span className="ml-2 text-muted-foreground">{trend.label}</span>

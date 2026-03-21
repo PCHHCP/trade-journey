@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
-  loginSchema,
-  registerSchema,
+  createLoginSchema,
+  createRegisterSchema,
   type LoginFormValues,
   type RegisterFormValues,
 } from "@/lib/validations/auth";
@@ -21,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/config/routes";
+import type { TFunction } from "i18next";
 
 function GoogleIcon() {
   return (
@@ -45,17 +47,31 @@ function GoogleIcon() {
   );
 }
 
-function getAuthErrorMessage(error: { message: string; code?: string }) {
+function getAuthErrorMessage(
+  error: { message: string; code?: string },
+  t: TFunction,
+) {
   const normalizedMessage = error.message.toLowerCase();
 
   if (
     error.code === "email_not_confirmed" ||
     normalizedMessage.includes("email not confirmed")
   ) {
-    return "该邮箱尚未完成验证，当前无法登录。请重新注册并前往邮箱完成验证。";
+    return t("auth.errors.emailNotConfirmed");
   }
 
-  return error.message;
+  if (
+    normalizedMessage.includes("invalid login credentials") ||
+    normalizedMessage.includes("invalid credentials")
+  ) {
+    return t("auth.errors.invalidCredentials");
+  }
+
+  if (normalizedMessage.includes("user already registered")) {
+    return t("auth.errors.userAlreadyRegistered");
+  }
+
+  return t("auth.errors.generic");
 }
 
 interface LoginDialogProps {
@@ -71,6 +87,7 @@ export function LoginDialog({
   authMessage = null,
   onAuthMessageDismiss,
 }: LoginDialogProps) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<
     "login" | "register" | "registered" | "verify-email"
@@ -86,7 +103,7 @@ export function LoginDialog({
   } | null>(null);
 
   const loginForm = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(createLoginSchema(t)),
     defaultValues: {
       email: "",
       password: "",
@@ -94,7 +111,7 @@ export function LoginDialog({
   });
 
   const registerForm = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(createRegisterSchema(t)),
     defaultValues: {
       email: "",
       password: "",
@@ -106,6 +123,21 @@ export function LoginDialog({
     oauthLoading ||
     loginForm.formState.isSubmitting ||
     registerForm.formState.isSubmitting;
+
+  useEffect(() => {
+    if (Object.keys(loginForm.formState.errors).length > 0) {
+      void loginForm.trigger();
+    }
+    if (Object.keys(registerForm.formState.errors).length > 0) {
+      void registerForm.trigger();
+    }
+  }, [
+    i18n.resolvedLanguage,
+    loginForm,
+    loginForm.formState.errors,
+    registerForm,
+    registerForm.formState.errors,
+  ]);
 
   function resetForms() {
     loginForm.reset();
@@ -139,7 +171,7 @@ export function LoginDialog({
     });
     pendingCredentialsRef.current = null;
     if (loginError) {
-      setError(getAuthErrorMessage(loginError));
+      setError(getAuthErrorMessage(loginError, t));
       setView("login");
       setCountdown(3);
     } else {
@@ -177,7 +209,7 @@ export function LoginDialog({
   async function handleGoogleAuth() {
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("尚未配置 Supabase，当前登录功能不可用。");
+      setError(t("auth.errors.unavailable"));
       return;
     }
     setOauthLoading(true);
@@ -189,7 +221,7 @@ export function LoginDialog({
         },
       });
       if (oauthError) {
-        setError(oauthError.message);
+        setError(getAuthErrorMessage(oauthError, t));
       }
     } finally {
       setOauthLoading(false);
@@ -199,7 +231,7 @@ export function LoginDialog({
   async function handleLoginSubmit(values: LoginFormValues) {
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("尚未配置 Supabase，当前登录功能不可用。");
+      setError(t("auth.errors.unavailable"));
       return;
     }
 
@@ -208,7 +240,7 @@ export function LoginDialog({
       password: values.password,
     });
     if (loginError) {
-      setError(getAuthErrorMessage(loginError));
+      setError(getAuthErrorMessage(loginError, t));
     } else {
       onOpenChange(false);
       setView("login");
@@ -220,7 +252,7 @@ export function LoginDialog({
   async function handleRegisterSubmit(values: RegisterFormValues) {
     setError(null);
     if (!supabase || !isSupabaseConfigured) {
-      setError("尚未配置 Supabase，当前注册功能不可用。");
+      setError(t("auth.errors.unavailable"));
       return;
     }
 
@@ -232,7 +264,7 @@ export function LoginDialog({
       },
     });
     if (signUpError) {
-      setError(signUpError.message);
+      setError(getAuthErrorMessage(signUpError, t));
     } else if (
       data.user &&
       (!data.user.identities || data.user.identities.length === 0)
@@ -255,12 +287,21 @@ export function LoginDialog({
   }
 
   const viewConfig = {
-    login: { title: "登录", description: "登录你的账号以继续" },
-    register: { title: "注册", description: "创建一个新账号" },
-    registered: { title: "提示", description: "该邮箱已注册" },
+    login: {
+      title: t("auth.dialog.loginTitle"),
+      description: t("auth.dialog.loginDescription"),
+    },
+    register: {
+      title: t("auth.dialog.registerTitle"),
+      description: t("auth.dialog.registerDescription"),
+    },
+    registered: {
+      title: t("auth.dialog.registeredTitle"),
+      description: t("auth.dialog.registeredDescription"),
+    },
     "verify-email": {
-      title: "查收验证邮件",
-      description: "注册成功，请先完成邮箱验证",
+      title: t("auth.dialog.verifyEmailTitle"),
+      description: t("auth.dialog.verifyEmailDescription"),
     },
   } as const;
 
@@ -284,8 +325,7 @@ export function LoginDialog({
         <div className="grid gap-4">
           {!isSupabaseConfigured && (
             <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-              当前还没配置 `VITE_SUPABASE_URL` 和
-              `VITE_SUPABASE_ANON_KEY`，认证按钮会保持不可用。
+              {t("auth.dialog.missingSupabaseConfig")}
             </div>
           )}
 
@@ -298,16 +338,16 @@ export function LoginDialog({
                 disabled={isBusy || !isSupabaseConfigured}
               >
                 <GoogleIcon />
-                使用 Google 登录
+                {t("auth.dialog.googleLogin")}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                首次使用 Google 登录将自动创建账号
+                {t("auth.dialog.googleFirstUse")}
               </p>
 
               <div className="relative flex items-center justify-center">
                 <Separator className="absolute w-full" />
                 <span className="relative bg-background px-2 text-xs text-muted-foreground">
-                  或
+                  {t("auth.dialog.divider")}
                 </span>
               </div>
             </>
@@ -331,7 +371,7 @@ export function LoginDialog({
                   onOpenChange(false);
                 }}
               >
-                我知道了
+                {t("common.understood")}
               </Button>
             </div>
           )}
@@ -339,30 +379,30 @@ export function LoginDialog({
           {view === "registered" ? (
             <div className="grid gap-4 text-center">
               <div className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-4 py-3 text-sm text-blue-700">
-                该邮箱已注册，将自动为您登录并跳转...
+                {t("auth.dialog.registeredAutoLogin")}
               </div>
               <p className="text-sm text-muted-foreground">
-                {countdown} 秒后自动跳转
+                {t("auth.dialog.redirectCountdown", { count: countdown })}
               </p>
               <Button onClick={() => void handleRegisteredRedirect()}>
-                确定
+                {t("common.confirm")}
               </Button>
             </div>
           ) : view === "verify-email" ? (
             <div className="grid gap-4">
               <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700">
-                验证邮件已发送至
+                {t("auth.dialog.verificationSentPrefix")}
                 <span className="ml-1 font-medium">
                   {pendingVerificationEmail}
                 </span>
                 。
               </div>
               <div className="grid gap-2 text-sm text-muted-foreground">
-                <p>请前往邮箱点击验证链接</p>
-                <p>如果几分钟内没有收到邮件，请检查垃圾箱或广告邮件分类。</p>
+                <p>{t("auth.dialog.verificationAction")}</p>
+                <p>{t("auth.dialog.verificationHint")}</p>
               </div>
               <Button type="button" onClick={() => switchView("login")}>
-                返回登录
+                {t("auth.dialog.backToLogin")}
               </Button>
             </div>
           ) : view === "login" ? (
@@ -374,11 +414,11 @@ export function LoginDialog({
               noValidate
             >
               <div className="grid gap-1.5">
-                <Label htmlFor="email">邮箱</Label>
+                <Label htmlFor="email">{t("auth.dialog.emailLabel")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("auth.dialog.emailPlaceholder")}
                   disabled={isBusy}
                   {...loginForm.register("email")}
                 />
@@ -390,11 +430,13 @@ export function LoginDialog({
               </div>
 
               <div className="grid gap-1.5">
-                <Label htmlFor="password">密码</Label>
+                <Label htmlFor="password">
+                  {t("auth.dialog.passwordLabel")}
+                </Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="至少 6 个字符"
+                  placeholder={t("auth.dialog.passwordPlaceholder")}
                   disabled={isBusy}
                   {...loginForm.register("password")}
                 />
@@ -410,7 +452,9 @@ export function LoginDialog({
                 className="w-full"
                 disabled={isBusy || !isSupabaseConfigured}
               >
-                {isBusy ? "处理中..." : "登录"}
+                {isBusy
+                  ? t("auth.dialog.processing")
+                  : t("auth.dialog.signInAction")}
               </Button>
             </form>
           ) : (
@@ -422,11 +466,13 @@ export function LoginDialog({
               noValidate
             >
               <div className="grid gap-1.5">
-                <Label htmlFor="register-email">邮箱</Label>
+                <Label htmlFor="register-email">
+                  {t("auth.dialog.emailLabel")}
+                </Label>
                 <Input
                   id="register-email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("auth.dialog.emailPlaceholder")}
                   disabled={isBusy}
                   {...registerForm.register("email")}
                 />
@@ -438,11 +484,13 @@ export function LoginDialog({
               </div>
 
               <div className="grid gap-1.5">
-                <Label htmlFor="register-password">密码</Label>
+                <Label htmlFor="register-password">
+                  {t("auth.dialog.passwordLabel")}
+                </Label>
                 <Input
                   id="register-password"
                   type="password"
-                  placeholder="至少 6 个字符"
+                  placeholder={t("auth.dialog.passwordPlaceholder")}
                   disabled={isBusy}
                   {...registerForm.register("password")}
                 />
@@ -454,11 +502,13 @@ export function LoginDialog({
               </div>
 
               <div className="grid gap-1.5">
-                <Label htmlFor="confirmPassword">确认密码</Label>
+                <Label htmlFor="confirmPassword">
+                  {t("auth.dialog.confirmPasswordLabel")}
+                </Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="再次输入密码"
+                  placeholder={t("auth.dialog.confirmPasswordPlaceholder")}
                   disabled={isBusy}
                   {...registerForm.register("confirmPassword")}
                 />
@@ -474,7 +524,9 @@ export function LoginDialog({
                 className="w-full"
                 disabled={isBusy || !isSupabaseConfigured}
               >
-                {isBusy ? "处理中..." : "注册"}
+                {isBusy
+                  ? t("auth.dialog.processing")
+                  : t("auth.dialog.registerAction")}
               </Button>
             </form>
           )}
@@ -482,24 +534,24 @@ export function LoginDialog({
           <p className="text-center text-sm text-muted-foreground">
             {view === "login" ? (
               <>
-                没有账号？
+                {t("auth.dialog.noAccountPrefix")}
                 <button
                   type="button"
                   className="text-primary underline underline-offset-4 hover:text-primary/80"
                   onClick={() => switchView("register")}
                 >
-                  注册
+                  {t("auth.dialog.noAccountAction")}
                 </button>
               </>
             ) : (
               <>
-                已有账号？
+                {t("auth.dialog.hasAccountPrefix")}
                 <button
                   type="button"
                   className="text-primary underline underline-offset-4 hover:text-primary/80"
                   onClick={() => switchView("login")}
                 >
-                  登录
+                  {t("auth.dialog.hasAccountAction")}
                 </button>
               </>
             )}

@@ -1,20 +1,29 @@
 import { z } from "zod";
+import type { TFunction } from "i18next";
 
-export const loginSchema = z.object({
-  email: z.email("请输入有效的邮箱地址"),
-  password: z.string().min(6, "密码至少需要 6 个字符"),
-});
-
-export const registerSchema = z
-  .object({
-    email: z.email("请输入有效的邮箱地址"),
-    password: z.string().min(6, "密码至少需要 6 个字符"),
-    confirmPassword: z.string().min(1, "请确认密码"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "两次输入的密码不一致",
-    path: ["confirmPassword"],
+export function createLoginSchema(t: TFunction) {
+  return z.object({
+    email: z.email(t("auth.validation.invalidEmail")),
+    password: z.string().min(6, t("auth.validation.passwordMin")),
   });
+}
 
-export type LoginFormValues = z.infer<typeof loginSchema>;
-export type RegisterFormValues = z.infer<typeof registerSchema>;
+export function createRegisterSchema(t: TFunction) {
+  return z
+    .object({
+      email: z.email(t("auth.validation.invalidEmail")),
+      password: z.string().min(6, t("auth.validation.passwordMin")),
+      confirmPassword: z
+        .string()
+        .min(1, t("auth.validation.confirmPasswordRequired")),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.validation.passwordsMismatch"),
+      path: ["confirmPassword"],
+    });
+}
+
+export type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;
+export type RegisterFormValues = z.infer<
+  ReturnType<typeof createRegisterSchema>
+>;

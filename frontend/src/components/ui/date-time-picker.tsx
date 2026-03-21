@@ -1,6 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useAppLanguage } from "@/hooks/useAppLanguage";
 
 interface DateTimePickerProps {
   value?: Date;
@@ -22,8 +24,10 @@ export function DateTimePicker({
   value,
   onChange,
   className,
-  placeholder = "Pick date & time",
+  placeholder,
 }: DateTimePickerProps) {
+  const { t } = useTranslation();
+  const { dateFnsLocale } = useAppLanguage();
   const [open, setOpen] = React.useState(false);
   const [month, setMonth] = React.useState(() => value ?? new Date());
   const [hours, setHours] = React.useState(() =>
@@ -67,7 +71,9 @@ export function DateTimePicker({
         )}
       >
         <span className="truncate">
-          {value ? format(value, "yyyy/MM/dd HH:mm") : placeholder}
+          {value
+            ? format(value, "PP p", { locale: dateFnsLocale })
+            : (placeholder ?? t("dashboard.form.dateTimePlaceholder"))}
         </span>
         <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
@@ -82,6 +88,7 @@ export function DateTimePicker({
           onSelect={handleDateSelect}
           month={month}
           onMonthChange={setMonth}
+          locale={dateFnsLocale}
           className="border-b border-border"
         />
         <div className="flex items-center justify-center gap-2 px-4 py-3">
@@ -89,14 +96,14 @@ export function DateTimePicker({
             value={hours}
             max={23}
             onChange={(v) => handleTimeChange(v, minutes)}
-            label="Hours"
+            label={t("dashboard.form.hoursLabel")}
           />
           <span className="text-lg font-medium text-muted-foreground">:</span>
           <TimeInput
             value={minutes}
             max={59}
             onChange={(v) => handleTimeChange(hours, v)}
-            label="Minutes"
+            label={t("dashboard.form.minutesLabel")}
           />
           <Button
             variant="ghost"
@@ -110,7 +117,7 @@ export function DateTimePicker({
               onChange?.(now);
             }}
           >
-            Now
+            {t("common.now")}
           </Button>
         </div>
       </PopoverContent>

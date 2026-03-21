@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/config/routes";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import { useTranslation } from "react-i18next";
 
 interface AccountMenuProps {
   className?: string;
@@ -18,6 +19,7 @@ interface AccountMenuProps {
 }
 
 export function AccountMenu({ className, compact = false }: AccountMenuProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const backendUser = useAuthStore((state) => state.backendUser);
   const supabaseUser = useAuthStore((state) => state.supabaseUser);
@@ -45,7 +47,7 @@ export function AccountMenu({ className, compact = false }: AccountMenuProps) {
   return (
     <Popover open={menuOpen} onOpenChange={setMenuOpen}>
       <PopoverTrigger
-        aria-label="Open account menu"
+        aria-label={t("common.account.ariaLabel")}
         className={cn(
           "flex items-center gap-3 border border-border/70 bg-background/85 text-left text-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-ring",
           compact
@@ -57,11 +59,13 @@ export function AccountMenu({ className, compact = false }: AccountMenuProps) {
       >
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">
-            {userEmail ?? "Account"}
+            {userEmail ?? t("common.account.fallbackName")}
           </p>
           {!compact && (
             <p className="truncate text-xs text-muted-foreground">
-              {userEmail ? "Signed in" : "Open account menu"}
+              {userEmail
+                ? t("common.account.signedIn")
+                : t("common.account.openMenu")}
             </p>
           )}
         </div>
@@ -82,10 +86,10 @@ export function AccountMenu({ className, compact = false }: AccountMenuProps) {
       >
         <div className="rounded-xl px-3 py-2">
           <p className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Account
+            {t("common.account.title")}
           </p>
           <p className="mt-1 truncate text-sm font-semibold text-popover-foreground">
-            {userEmail ?? "Signed in user"}
+            {userEmail ?? t("common.account.signedInUser")}
           </p>
         </div>
         <Separator className="bg-border/80" />
@@ -96,7 +100,9 @@ export function AccountMenu({ className, compact = false }: AccountMenuProps) {
           disabled={isLoggingOut}
         >
           <LogOut className="size-4" />
-          {isLoggingOut ? "Logging out..." : "Log out"}
+          {isLoggingOut
+            ? t("common.account.loggingOut")
+            : t("common.account.logOut")}
         </Button>
       </PopoverContent>
     </Popover>

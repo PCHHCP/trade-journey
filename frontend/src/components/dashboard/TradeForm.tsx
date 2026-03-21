@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { format } from "date-fns";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import type { DashboardTrade } from "./types";
 
@@ -10,6 +11,7 @@ interface TradeFormProps {
 }
 
 export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
+  const { t } = useTranslation();
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -61,7 +63,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
       <div className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border p-6">
           <h2 className="text-lg font-semibold text-foreground">
-            Log New Trade
+            {t("dashboard.form.title")}
           </h2>
           <button
             onClick={onClose}
@@ -78,19 +80,19 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">
-                Date
+                {t("dashboard.form.date")}
               </label>
               <DateTimePicker value={date} onChange={setDate} />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">
-                Product
+                {t("dashboard.form.product")}
               </label>
               <input
                 type="text"
                 required
-                placeholder="E.G. BTC/USD"
+                placeholder={t("dashboard.form.productPlaceholder")}
                 value={formData.product}
                 onChange={(e) =>
                   setFormData({ ...formData, product: e.target.value })
@@ -102,7 +104,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-muted-foreground">
-              Type
+              {t("dashboard.form.type")}
             </label>
             <div className="relative flex rounded-lg border border-input bg-background p-1">
               <div
@@ -125,7 +127,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
                       : "var(--muted-foreground)",
                 }}
               >
-                Long
+                {t("dashboard.tradeTypes.LONG")}
               </button>
               <button
                 type="button"
@@ -138,7 +140,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
                       : "var(--muted-foreground)",
                 }}
               >
-                Short
+                {t("dashboard.tradeTypes.SHORT")}
               </button>
             </div>
           </div>
@@ -146,7 +148,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">
-                Entry Price
+                {t("dashboard.form.entryPrice")}
               </label>
               <input
                 type="number"
@@ -163,7 +165,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">
-                Exit Price
+                {t("dashboard.form.exitPrice")}
               </label>
               <input
                 type="number"
@@ -182,7 +184,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-muted-foreground">
-              Lot
+              {t("dashboard.form.lot")}
             </label>
             <input
               type="number"
@@ -200,11 +202,11 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-muted-foreground">
-              Notes (Optional)
+              {t("dashboard.form.notes")}
             </label>
             <textarea
               rows={3}
-              placeholder="Why did you take this trade?"
+              placeholder={t("dashboard.form.notesPlaceholder")}
               value={formData.notes}
               onChange={(e) =>
                 setFormData({ ...formData, notes: e.target.value })
@@ -219,13 +221,13 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
               onClick={onClose}
               className="rounded-lg border border-border bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
               className="rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card"
             >
-              Save Trade
+              {t("dashboard.form.saveTrade")}
             </button>
           </div>
         </form>

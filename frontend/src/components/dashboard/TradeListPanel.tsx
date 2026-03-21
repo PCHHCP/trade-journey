@@ -1,8 +1,10 @@
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useAppLanguage } from "@/hooks/useAppLanguage";
 import { cn } from "@/lib/utils";
 import type { DashboardTrade } from "./types";
-import { formatCurrency } from "./utils";
+import { formatCurrency, formatLongDate } from "@/lib/locale";
 
 interface TradeListPanelProps {
   trades: DashboardTrade[];
@@ -10,6 +12,8 @@ interface TradeListPanelProps {
 }
 
 export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
+  const { t } = useTranslation();
+  const { language, dateFnsLocale } = useAppLanguage();
   const sortedTrades = [...trades].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
@@ -18,22 +22,40 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-border p-6">
         <h3 className="text-base font-semibold text-foreground">
-          Recent Trades
+          {t("dashboard.table.recentTrades")}
         </h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
             <tr>
-              <th className="px-6 py-4 font-medium">Date</th>
-              <th className="px-6 py-4 font-medium">Product</th>
-              <th className="px-6 py-4 font-medium">Type</th>
-              <th className="px-6 py-4 font-medium text-right">Entry</th>
-              <th className="px-6 py-4 font-medium text-right">Exit</th>
-              <th className="px-6 py-4 font-medium text-right">Lot</th>
-              <th className="px-6 py-4 font-medium text-right">P&L</th>
-              <th className="px-6 py-4 font-medium">Notes</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
+              <th className="px-6 py-4 font-medium">
+                {t("dashboard.table.date")}
+              </th>
+              <th className="px-6 py-4 font-medium">
+                {t("dashboard.table.product")}
+              </th>
+              <th className="px-6 py-4 font-medium">
+                {t("dashboard.table.type")}
+              </th>
+              <th className="px-6 py-4 font-medium text-right">
+                {t("dashboard.table.entry")}
+              </th>
+              <th className="px-6 py-4 font-medium text-right">
+                {t("dashboard.table.exit")}
+              </th>
+              <th className="px-6 py-4 font-medium text-right">
+                {t("dashboard.table.lot")}
+              </th>
+              <th className="px-6 py-4 font-medium text-right">
+                {t("dashboard.table.pnl")}
+              </th>
+              <th className="px-6 py-4 font-medium">
+                {t("dashboard.table.notes")}
+              </th>
+              <th className="px-6 py-4 font-medium text-right">
+                {t("dashboard.table.actions")}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -43,7 +65,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                   colSpan={9}
                   className="px-6 py-8 text-center text-muted-foreground"
                 >
-                  No trades recorded yet. Add your first trade to see it here.
+                  {t("dashboard.table.empty")}
                 </td>
               </tr>
             ) : (
@@ -53,7 +75,11 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                   className="group transition-colors hover:bg-muted/40"
                 >
                   <td className="whitespace-nowrap px-6 py-4 text-muted-foreground">
-                    {format(parseISO(trade.date), "MMM dd, yyyy")}
+                    {formatLongDate(
+                      parseISO(trade.date),
+                      language,
+                      dateFnsLocale,
+                    )}
                   </td>
                   <td className="px-6 py-4 font-medium text-foreground">
                     {trade.product}
@@ -72,14 +98,14 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                       ) : (
                         <ArrowDownRight className="w-3 h-3" />
                       )}
-                      {trade.type}
+                      {t(`dashboard.tradeTypes.${trade.type}`)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right font-mono text-muted-foreground">
-                    {formatCurrency(trade.entryPrice)}
+                    {formatCurrency(trade.entryPrice, language)}
                   </td>
                   <td className="px-6 py-4 text-right font-mono text-muted-foreground">
-                    {formatCurrency(trade.exitPrice)}
+                    {formatCurrency(trade.exitPrice, language)}
                   </td>
                   <td className="px-6 py-4 text-right font-mono text-muted-foreground">
                     {trade.lot}
@@ -91,7 +117,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                       }
                     >
                       {trade.pnl >= 0 ? "+" : ""}
-                      {formatCurrency(trade.pnl)}
+                      {formatCurrency(trade.pnl, language)}
                     </span>
                   </td>
                   <td
@@ -104,9 +130,9 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                     <button
                       onClick={() => onDelete?.(trade.id)}
                       className="opacity-0 text-muted-foreground transition-colors group-hover:opacity-100 hover:text-rose-400"
-                      aria-label="Delete trade"
+                      aria-label={t("dashboard.table.deleteTradeAria")}
                     >
-                      Delete
+                      {t("dashboard.actions.deleteTrade")}
                     </button>
                   </td>
                 </tr>
