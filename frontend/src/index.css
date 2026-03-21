@@ -39,26 +39,26 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --landing-shell: #fcfdff;
-  --landing-shell-muted: #f3f7fb;
-  --landing-border: rgba(15, 23, 42, 0.08);
-  --landing-border-strong: rgba(14, 165, 233, 0.18);
+  --landing-shell: #e6ebfc;
+  --landing-shell-muted: #e6ebfc;
+  --landing-border: rgba(14, 165, 233, 0.14);
+  --landing-border-strong: rgba(14, 165, 233, 0.22);
   --landing-brand: #0284c7;
   --landing-highlight: #059669;
   --landing-text: #0f172a;
   --landing-text-muted: rgba(15, 23, 42, 0.68);
-  --landing-control-bg: rgba(255, 255, 255, 0.78);
+  --landing-control-bg: rgba(255, 255, 255, 0.84);
   --landing-button-bg: rgba(255, 255, 255, 0.92);
   --landing-button-hover: rgba(240, 249, 255, 0.95);
   --landing-tooltip-bg: rgba(255, 255, 255, 0.92);
-  --ticker-bg: rgba(236, 253, 245, 0.88);
-  --ticker-border: rgba(16, 185, 129, 0.22);
-  --ticker-divider: rgba(148, 163, 184, 0.18);
+  --ticker-bg: rgba(236, 253, 245, 0.94);
+  --ticker-border: rgba(110, 231, 183, 0.38);
+  --ticker-divider: rgba(148, 163, 184, 0.16);
   --ticker-highlight: rgba(16, 185, 129, 0.72);
   --ticker-label: rgba(15, 23, 42, 0.62);
   --ticker-up: #0284c7;
   --ticker-down: #dc2626;
-  --ticker-fade-solid: rgba(236, 253, 245, 1);
+  --ticker-fade-solid: rgba(236, 253, 245, 0.98);
   --ticker-fade-clear: rgba(236, 253, 245, 0);
   --dashboard-shell: #f4f7fb;
   --dashboard-grid-dot: rgba(148, 163, 184, 0.22);
@@ -68,14 +68,14 @@
   --hero-caret-shadow: rgba(14, 165, 233, 0.24);
   --globe-aura-primary: radial-gradient(
     circle,
-    rgba(0, 210, 106, 0.16),
-    rgba(255, 255, 255, 0) 68%
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(255, 255, 255, 0) 60%
   );
   --globe-aura-secondary: radial-gradient(
     circle,
-    rgba(56, 189, 248, 0.18) 0%,
-    rgba(14, 165, 233, 0.12) 48%,
-    rgba(255, 255, 255, 0) 74%
+    rgba(6, 182, 212, 0.16) 0%,
+    rgba(59, 130, 246, 0.1) 32%,
+    rgba(255, 255, 255, 0) 52%
   );
   --globe-marker: #38bdf8;
   --globe-marker-shadow:
@@ -241,19 +241,8 @@
   }
 
   .landing-grid {
-    background-image:
-      radial-gradient(
-        circle at 1px 1px,
-        rgba(14, 165, 233, 0.15) 1px,
-        transparent 0
-      ),
-      linear-gradient(180deg, #f8fbff 0%, #eef4fa 100%);
-    background-size:
-      22px 22px,
-      100% 100%;
-    background-position:
-      0 0,
-      0 0;
+    background-size: 24px 24px;
+    background-position: 0 0;
   }
 
   .ticker-track {

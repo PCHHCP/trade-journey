@@ -64,6 +64,9 @@ function readStoredTheme() {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeMode>(readStoredTheme);
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+    resolveTheme(readStoredTheme(), getSystemTheme()),
+  );
 
   useEffect(() => {
     if (theme !== "system") {
@@ -94,14 +97,16 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    applyResolvedTheme(resolveTheme(theme, systemTheme));
+    const nextResolvedTheme = resolveTheme(theme, systemTheme);
+    applyResolvedTheme(nextResolvedTheme);
+    setResolvedTheme(nextResolvedTheme);
   }, [theme, systemTheme]);
 
   return (
     <ThemeContext.Provider
       value={{
         theme,
-        resolvedTheme: resolveTheme(theme, systemTheme),
+        resolvedTheme,
         setTheme,
       }}
     >
