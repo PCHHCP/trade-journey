@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import createGlobe from "cobe";
 import type { Globe, Marker } from "cobe";
+import { useTranslation } from "react-i18next";
 import {
   LANDING_HERO_MARKETS,
   type GlobeMarketDefinition,
@@ -9,20 +10,11 @@ import { useTheme } from "@/hooks/useTheme";
 
 interface GlobeMarker extends GlobeMarketDefinition {
   label: string;
+  name: string;
+  country: string;
+  marketTypeLabel: string;
   size: number;
 }
-
-const GLOBE_MARKERS: GlobeMarker[] = LANDING_HERO_MARKETS.map((market) => ({
-  ...market,
-  label: `${market.name} market`,
-  size: 0.05,
-}));
-
-const COBE_MARKERS: Marker[] = GLOBE_MARKERS.map((marker) => ({
-  id: marker.id,
-  location: marker.location,
-  size: marker.size,
-}));
 
 function getMarkerAnchorStyle(
   markerId: string,
@@ -52,6 +44,7 @@ function getTooltipAnchorStyle(
 }
 
 export function LandingHeroGlobe() {
+  const { t } = useTranslation();
   const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasHostRef = useRef<HTMLDivElement | null>(null);
@@ -71,6 +64,23 @@ export function LandingHeroGlobe() {
   });
   const [size, setSize] = useState(0);
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null);
+  const globeMarkers: GlobeMarker[] = LANDING_HERO_MARKETS.map((market) => {
+    const marketName = t(`landing.markets.${market.id}.name`);
+
+    return {
+      ...market,
+      label: t("landing.globe.markerAria", { name: marketName }),
+      name: marketName,
+      country: t(`landing.countries.${market.countryCode}`),
+      marketTypeLabel: t(`landing.marketTypes.${market.marketType}`),
+      size: 0.05,
+    };
+  });
+  const cobeMarkers: Marker[] = globeMarkers.map((marker) => ({
+    id: marker.id,
+    location: marker.location,
+    size: marker.size,
+  }));
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -129,15 +139,12 @@ export function LandingHeroGlobe() {
       mapSamples: 16000,
       mapBrightness: 10,
       mapBaseBrightness: 0,
-      baseColor:
-        resolvedTheme === "dark" ? [0.78, 0.78, 0.78] : [1, 1, 1],
-      markerColor:
-        resolvedTheme === "dark" ? [0.24, 0.56, 1] : [0.1, 0.6, 1],
-      glowColor:
-        resolvedTheme === "dark" ? [0.36, 0.22, 0.82] : [0.8, 0.9, 1],
+      baseColor: resolvedTheme === "dark" ? [0.78, 0.78, 0.78] : [1, 1, 1],
+      markerColor: resolvedTheme === "dark" ? [0.24, 0.56, 1] : [0.1, 0.6, 1],
+      glowColor: resolvedTheme === "dark" ? [0.36, 0.22, 0.82] : [0.8, 0.9, 1],
       opacity: 1,
       offset: [0, 0],
-      markers: COBE_MARKERS,
+      markers: cobeMarkers,
     });
     globeRef.current = globe;
 
@@ -167,7 +174,7 @@ export function LandingHeroGlobe() {
         canvasHost.replaceChildren();
       }
     };
-  }, [resolvedTheme, size]);
+  }, [cobeMarkers, resolvedTheme, size]);
 
   function setMarkerActive(markerId: string | null) {
     activeMarkerIdRef.current = markerId;
@@ -221,7 +228,7 @@ export function LandingHeroGlobe() {
   }
 
   const activeMarker =
-    GLOBE_MARKERS.find((marker) => marker.id === activeMarkerId) ?? null;
+    globeMarkers.find((marker) => marker.id === activeMarkerId) ?? null;
 
   return (
     <div className="relative mx-auto flex w-full max-w-[30rem] items-center justify-center">
@@ -258,7 +265,7 @@ export function LandingHeroGlobe() {
       >
         <div ref={canvasHostRef} className="relative z-10 size-full" />
 
-        {GLOBE_MARKERS.map((marker) => (
+        {globeMarkers.map((marker) => (
           <button
             key={marker.id}
             type="button"
@@ -294,7 +301,7 @@ export function LandingHeroGlobe() {
               {activeMarker.name}
             </p>
             <p className="mt-2 text-[0.68rem] tracking-[0.16em] text-[var(--landing-text-muted)] uppercase">
-              {activeMarker.marketType} / {activeMarker.country}
+              {activeMarker.marketTypeLabel} / {activeMarker.country}
             </p>
           </div>
         ) : null}

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Navigate, useLocation, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { LoginDialog } from "@/components/auth/LoginDialog";
 import { LandingHero } from "@/components/landing/LandingHero";
-import { useTheme } from "@/hooks/useTheme";
+import { useDelayedResolvedTheme } from "@/hooks/useDelayedResolvedTheme";
 import { ROUTES } from "@/config/routes";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -27,13 +28,13 @@ function clearPersistedAuthStatus() {
 }
 
 export function Landing() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { resolvedTheme } = useTheme();
+  const backgroundTheme = useDelayedResolvedTheme(LANDING_BACKGROUND_DELAY_MS);
   const session = useAuthStore((state) => state.session);
   const loading = useAuthStore((state) => state.loading);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [backgroundTheme, setBackgroundTheme] = useState(resolvedTheme);
   const [authStatus, setAuthStatus] = useState<string | null>(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const statusFromUrl = searchParams.get("auth_status");
@@ -51,20 +52,10 @@ export function Landing() {
   });
   const authMessage = useMemo(() => {
     if (authStatus === "expired") {
-      return "注册链接已过期，请重新注册后再前往邮箱完成验证。";
+      return t("auth.authExpired");
     }
     return null;
-  }, [authStatus]);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setBackgroundTheme(resolvedTheme);
-    }, LANDING_BACKGROUND_DELAY_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [resolvedTheme]);
+  }, [authStatus, t]);
 
   function clearAuthStatus() {
     if (!authStatus) {

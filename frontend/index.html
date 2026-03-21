@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-US">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -7,10 +7,22 @@
     <title>Tyche</title>
     <script>
       (() => {
+        const languageStorageKey = "language-preference";
+        const appTitles = {
+          "en-US": "Tyche | Trading Journal",
+          "zh-CN": "Tyche | 交易日志",
+        };
         const storageKey = "theme-preference";
         const nightStartHour = 22;
         const dayStartHour = 6;
         const root = document.documentElement;
+        const storedLanguage = window.localStorage.getItem(languageStorageKey);
+        const language =
+          storedLanguage === "en-US" || storedLanguage === "zh-CN"
+            ? storedLanguage
+            : window.navigator.language.toLowerCase().startsWith("zh")
+              ? "zh-CN"
+              : "en-US";
         const storedTheme = window.localStorage.getItem(storageKey);
         const theme =
           storedTheme === "light" ||
@@ -26,9 +38,11 @@
               : "light"
             : theme;
 
+        root.lang = language;
         root.classList.toggle("dark", resolvedTheme === "dark");
         root.style.colorScheme = resolvedTheme;
         root.dataset.theme = resolvedTheme;
+        document.title = appTitles[language];
       })();
     </script>
   </head>

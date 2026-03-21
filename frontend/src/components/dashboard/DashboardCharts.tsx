@@ -13,15 +13,19 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { useAppLanguage } from "@/hooks/useAppLanguage";
 import type { DashboardTrade } from "./types";
-import { formatCurrency } from "./utils";
+import { formatChartDate, formatCurrency, formatNumber } from "@/lib/locale";
 
 interface DashboardChartsProps {
   trades: DashboardTrade[];
 }
 
 export function DashboardCharts({ trades }: DashboardChartsProps) {
+  const { t } = useTranslation();
+  const { language, dateFnsLocale } = useAppLanguage();
   const sortedTrades = useMemo(() => {
     return [...trades].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -32,30 +36,34 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
     return sortedTrades.reduce<{ date: string; pnl: number }[]>((acc, t) => {
       const prev = acc.length > 0 ? acc[acc.length - 1].pnl : 0;
       acc.push({
-        date: format(parseISO(t.date), "MMM dd"),
+        date: formatChartDate(parseISO(t.date), language, dateFnsLocale),
         pnl: prev + t.pnl,
       });
       return acc;
     }, []);
-  }, [sortedTrades]);
+  }, [dateFnsLocale, language, sortedTrades]);
 
   const dailyData = useMemo(() => {
     const dailyMap = new Map<string, number>();
     sortedTrades.forEach((t) => {
-      const dateStr = format(parseISO(t.date), "MMM dd");
+      const dateStr = formatChartDate(
+        parseISO(t.date),
+        language,
+        dateFnsLocale,
+      );
       dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + t.pnl);
     });
     return Array.from(dailyMap.entries()).map(([date, pnl]) => ({ date, pnl }));
-  }, [sortedTrades]);
+  }, [dateFnsLocale, language, sortedTrades]);
 
   const winLossData = useMemo(() => {
     const wins = trades.filter((t) => t.pnl > 0).length;
     const losses = trades.filter((t) => t.pnl <= 0).length;
     return [
-      { name: "Wins", value: wins, color: "#10b981" },
-      { name: "Losses", value: losses, color: "#f43f5e" },
+      { name: t("dashboard.charts.wins"), value: wins, color: "#10b981" },
+      { name: t("dashboard.charts.losses"), value: losses, color: "#f43f5e" },
     ];
-  }, [trades]);
+  }, [t, trades]);
 
   const tooltipStyle = {
     backgroundColor: "var(--card)",
@@ -71,7 +79,7 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
       {/* Cumulative PnL Chart */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-2">
         <h3 className="mb-6 text-base font-semibold text-foreground">
-          Cumulative P&L
+          {t("dashboard.charts.cumulativePnl")}
         </h3>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -101,14 +109,16 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                tickFormatter={(val: number) => `$${val}`}
+                tickFormatter={(value: number) =>
+                  formatCurrency(value, language)
+                }
               />
               <Tooltip
                 contentStyle={tooltipStyle}
                 itemStyle={tooltipItemStyle}
                 formatter={(value) => [
-                  formatCurrency(value as number),
-                  "Cumulative P&L",
+                  formatCurrency(value as number, language),
+                  t("dashboard.charts.cumulativePnlSeries"),
                 ]}
               />
               <Area
@@ -127,7 +137,7 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
       {/* Win/Loss Pie Chart */}
       <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
         <h3 className="mb-6 text-base font-semibold text-foreground">
-          Win / Loss Ratio
+          {t("dashboard.charts.winLossRatio")}
         </h3>
         <div className="relative min-h-[250px] w-full flex-1">
           <ResponsiveContainer width="100%" height="100%">
@@ -154,13 +164,16 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none flex-col">
             <span className="text-2xl font-bold text-foreground">
-              {trades.length > 0
-                ? Math.round((winLossData[0].value / trades.length) * 100)
-                : 0}
+              {formatNumber(
+                trades.length > 0
+                  ? Math.round((winLossData[0].value / trades.length) * 100)
+                  : 0,
+                language,
+              )}
               %
             </span>
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
-              Win Rate
+              {t("dashboard.stats.winRate")}
             </span>
           </div>
         </div>
@@ -182,7 +195,7 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
       {/* Daily PnL Bar Chart */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-3">
         <h3 className="mb-6 text-base font-semibold text-foreground">
-          Daily P&L
+          {t("dashboard.charts.dailyPnl")}
         </h3>
         <div className="h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -206,15 +219,17 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                tickFormatter={(val: number) => `$${val}`}
+                tickFormatter={(value: number) =>
+                  formatCurrency(value, language)
+                }
               />
               <Tooltip
                 cursor={{ fill: "var(--muted)" }}
                 contentStyle={tooltipStyle}
                 itemStyle={tooltipItemStyle}
                 formatter={(value) => [
-                  formatCurrency(value as number),
-                  "Daily P&L",
+                  formatCurrency(value as number, language),
+                  t("dashboard.charts.dailyPnlSeries"),
                 ]}
               />
               <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>

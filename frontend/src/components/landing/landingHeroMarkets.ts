@@ -1,66 +1,52 @@
 export interface GlobeMarketDefinition {
   id: string;
   code: string;
-  name: string;
-  marketType: string;
-  country: string;
+  marketType: "equities" | "futures";
   countryCode: string;
   location: [number, number];
 }
 
 export const LANDING_HERO_MARKETS: readonly GlobeMarketDefinition[] = [
   {
-    id: "new-york",
+    id: "newYork",
     code: "NYSE",
-    name: "New York Stock Exchange",
-    marketType: "Equities",
-    country: "United States",
+    marketType: "equities",
     countryCode: "US",
     location: [40.7128, -74.006],
   },
   {
     id: "chicago",
     code: "CME",
-    name: "Chicago Mercantile Exchange",
-    marketType: "Futures",
-    country: "United States",
+    marketType: "futures",
     countryCode: "US",
     location: [41.8781, -87.6298],
   },
   {
     id: "tokyo",
     code: "TSE",
-    name: "Tokyo Stock Exchange",
-    marketType: "Equities",
-    country: "Japan",
+    marketType: "equities",
     countryCode: "JP",
     location: [35.6764, 139.65],
   },
   {
-    id: "hong-kong",
+    id: "hongKong",
     code: "HKEX",
-    name: "Hong Kong Exchanges",
-    marketType: "Equities",
-    country: "Hong Kong SAR",
+    marketType: "equities",
     countryCode: "HK",
     location: [22.3193, 114.1694],
   },
   {
     id: "shanghai",
     code: "SSE",
-    name: "Shanghai Stock Exchange",
-    marketType: "Equities",
-    country: "China",
+    marketType: "equities",
     countryCode: "CN",
     location: [31.2304, 121.4737],
   },
   {
     id: "london",
     code: "LSE",
-    name: "London Stock Exchange",
-    marketType: "Equities",
-    country: "United Kingdom",
-    countryCode: "UK",
+    marketType: "equities",
+    countryCode: "GB",
     location: [51.5072, -0.1276],
   },
 ] as const;

@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { withTranslation, type WithTranslation } from "react-i18next";
 
-interface AppErrorBoundaryProps {
+interface AppErrorBoundaryProps extends WithTranslation {
   children: ReactNode;
 }
 
@@ -8,7 +9,7 @@ interface AppErrorBoundaryState {
   hasError: boolean;
 }
 
-export class AppErrorBoundary extends Component<
+class AppErrorBoundaryBase extends Component<
   AppErrorBoundaryProps,
   AppErrorBoundaryState
 > {
@@ -27,14 +28,16 @@ export class AppErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
+      const { t } = this.props;
+
       return (
         <main className="flex min-h-screen items-center justify-center px-6">
           <div className="max-w-md text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
-              页面出现错误
+              {t("common.errorBoundary.title")}
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">
-              请刷新页面后重试。如果问题持续存在，再检查环境变量或最近的改动。
+              {t("common.errorBoundary.description")}
             </p>
           </div>
         </main>
@@ -44,3 +47,5 @@ export class AppErrorBoundary extends Component<
     return this.props.children;
   }
 }
+
+export const AppErrorBoundary = withTranslation()(AppErrorBoundaryBase);
