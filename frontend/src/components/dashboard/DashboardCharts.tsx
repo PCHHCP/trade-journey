@@ -14,6 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { parseISO } from "date-fns";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useAppLanguage } from "@/hooks/useAppLanguage";
 import type { DashboardTrade } from "./types";
@@ -77,7 +78,10 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
   return (
     <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Cumulative PnL Chart */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-2">
+      <motion.div
+        whileHover={{ y: -4 }}
+        className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 lg:col-span-2 dark:hover:shadow-black/20"
+      >
         <h3 className="mb-6 text-base font-semibold text-foreground">
           {t("dashboard.charts.cumulativePnl")}
         </h3>
@@ -132,10 +136,13 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </motion.div>
 
       {/* Win/Loss Pie Chart */}
-      <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <motion.div
+        whileHover={{ y: -4 }}
+        className="flex flex-col rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20"
+      >
         <h3 className="mb-6 text-base font-semibold text-foreground">
           {t("dashboard.charts.winLossRatio")}
         </h3>
@@ -190,10 +197,13 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Daily PnL Bar Chart */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-3">
+      <motion.div
+        whileHover={{ y: -4 }}
+        className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 lg:col-span-3 dark:hover:shadow-black/20"
+      >
         <h3 className="mb-6 text-base font-semibold text-foreground">
           {t("dashboard.charts.dailyPnl")}
         </h3>
@@ -243,7 +253,7 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

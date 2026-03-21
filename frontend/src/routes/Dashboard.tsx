@@ -9,12 +9,11 @@ import {
 } from "date-fns";
 import {
   Activity,
-  TrendingUp,
   Target,
   Plus,
   LineChart,
   Wallet,
-  Filter,
+  Calendar,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -23,15 +22,43 @@ import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AccountMenu } from "@/components/layout/AccountMenu";
 import { useAppLanguage } from "@/hooks/useAppLanguage";
 import { useDelayedResolvedTheme } from "@/hooks/useDelayedResolvedTheme";
-import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { TradeListPanel } from "@/components/dashboard/TradeListPanel";
+import { TradeCalendar } from "@/components/dashboard/TradeCalendar";
 import { TradeForm } from "@/components/dashboard/TradeForm";
 import { initialTrades } from "@/components/dashboard/mockData";
 import { formatCurrency, formatNumber, formatRatioPercent } from "@/lib/locale";
 import type { DashboardTrade, TradeStats } from "@/components/dashboard/types";
 
 const DASHBOARD_BACKGROUND_DELAY_MS = 300;
+
+const DATE_FILTERS = [
+  { id: "all", labelKey: "dashboard.filterPills.all" },
+  { id: "7d", labelKey: "dashboard.filterPills.last7Days" },
+  { id: "30d", labelKey: "dashboard.filterPills.last30Days" },
+  { id: "month", labelKey: "dashboard.filterPills.thisMonth" },
+  { id: "year", labelKey: "dashboard.filterPills.thisYear" },
+  { id: "custom", labelKey: "dashboard.filterPills.custom" },
+] as const;
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" as const },
+  },
+};
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -141,156 +168,220 @@ export function Dashboard() {
       style={{ backgroundPosition: "0 0", backgroundSize: "24px 24px" }}
     >
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-8">
-        {/* Filter Bar */}
-        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <LineChart className="size-5" />
-            </div>
-            <h2 className="text-lg font-medium text-foreground">
-              {t("dashboard.overviewTitle")}
-            </h2>
-          </div>
-          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
-            <LanguageToggle />
-            <ThemeToggle />
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
-              <Filter className="size-4 text-muted-foreground" />
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="cursor-pointer bg-transparent text-sm text-foreground focus:outline-none"
-              >
-                <option value="all" className="bg-card text-foreground">
-                  {t("dashboard.filters.all")}
-                </option>
-                <option value="7d" className="bg-card text-foreground">
-                  {t("dashboard.filters.last7Days")}
-                </option>
-                <option value="30d" className="bg-card text-foreground">
-                  {t("dashboard.filters.last30Days")}
-                </option>
-                <option value="month" className="bg-card text-foreground">
-                  {t("dashboard.filters.thisMonth")}
-                </option>
-                <option value="year" className="bg-card text-foreground">
-                  {t("dashboard.filters.thisYear")}
-                </option>
-                <option value="custom" className="bg-card text-foreground">
-                  {t("dashboard.filters.custom")}
-                </option>
-              </select>
-            </div>
-
-            {dateFilter === "custom" && (
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
-                <input
-                  type="date"
-                  value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="bg-transparent text-sm text-foreground focus:outline-none"
-                  style={{ colorScheme: "light dark" }}
-                />
-                <span className="text-muted-foreground">-</span>
-                <input
-                  type="date"
-                  value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="bg-transparent text-sm text-foreground focus:outline-none"
-                  style={{ colorScheme: "light dark" }}
-                />
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          {/* Filter Bar */}
+          <motion.div
+            variants={itemVariants}
+            className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center"
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <LineChart className="size-5" />
               </div>
-            )}
+              <h2 className="text-lg font-medium text-foreground">
+                {t("dashboard.overviewTitle")}
+              </h2>
+            </div>
+            <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
+              <LanguageToggle />
+              <ThemeToggle />
 
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="inline-flex w-[9.5rem] shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              {/* Pill-style filter buttons */}
+              <div className="flex rounded-xl border border-border bg-card p-1 shadow-sm">
+                {DATE_FILTERS.map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setDateFilter(filter.id)}
+                    className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                      dateFilter === filter.id
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {t(filter.labelKey)}
+                  </button>
+                ))}
+              </div>
+
+              {dateFilter === "custom" && (
+                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5 shadow-sm">
+                  <Calendar className="size-4 text-muted-foreground" />
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="bg-transparent text-sm text-foreground focus:outline-none"
+                    style={{ colorScheme: "light dark" }}
+                  />
+                  <span className="text-muted-foreground opacity-50">-</span>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="bg-transparent text-sm text-foreground focus:outline-none"
+                    style={{ colorScheme: "light dark" }}
+                  />
+                </div>
+              )}
+
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="inline-flex w-[9.5rem] shrink-0 items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted dark:border-transparent dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700"
+              >
+                <Plus className="size-4" />
+                {t("dashboard.actions.logTrade")}
+              </button>
+              <AccountMenu compact className="bg-card sm:ml-auto" />
+            </div>
+          </motion.div>
+
+          {/* Bento Grid Stats */}
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
+            {/* Hero P&L */}
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -4 }}
+              className="relative flex min-h-[260px] flex-col justify-center overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 md:col-span-2 dark:hover:shadow-black/20"
             >
-              <Plus className="size-4" />
-              {t("dashboard.actions.logTrade")}
-            </button>
-            <AccountMenu compact className="bg-card sm:ml-auto" />
-          </div>
-        </div>
+              <div
+                className={`absolute -top-32 -right-32 h-96 w-96 rounded-full blur-[100px] transition-colors duration-500 ${stats.totalPnl >= 0 ? "bg-emerald-500 opacity-10 dark:opacity-20" : "bg-rose-500 opacity-10 dark:opacity-20"}`}
+              />
+              <div className="relative z-10">
+                <div className="mb-6 flex items-center gap-2">
+                  <div className="flex size-10 items-center justify-center rounded-full border border-border bg-muted">
+                    <Wallet className="size-5 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium text-muted-foreground">
+                    {t("dashboard.stats.netPnl")}
+                  </h3>
+                </div>
+                <div
+                  className={`text-6xl font-bold tracking-tight md:text-7xl ${stats.totalPnl >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}
+                >
+                  {stats.totalPnl >= 0 ? "+" : ""}
+                  {formatCurrency(stats.totalPnl, language)}
+                </div>
+              </div>
+            </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title={t("dashboard.stats.netPnl")}
-            value={formatCurrency(stats.totalPnl, language)}
-            icon={<Wallet className="w-5 h-5" />}
-            trend={{
-              value: stats.totalPnl !== 0 ? 100 : 0,
-              isPositive: stats.totalPnl >= 0,
-              label: t("dashboard.stats.allTime"),
-            }}
-          />
-          <StatCard
-            title={t("dashboard.stats.winRate")}
-            value={formatRatioPercent(stats.winRate, language)}
-            icon={<Target className="w-5 h-5" />}
-          />
-          <StatCard
-            title={t("dashboard.stats.profitFactor")}
-            value={formatNumber(stats.profitFactor, language, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-            icon={<Activity className="w-5 h-5" />}
-            trend={{
-              value: stats.profitFactor > 1 ? 100 : 0,
-              isPositive: stats.profitFactor >= 1,
-              label: t("dashboard.stats.grossProfitOverGrossLoss"),
-            }}
-          />
-          <StatCard
-            title={t("dashboard.stats.totalTrades")}
-            value={stats.totalTrades}
-            icon={<TrendingUp className="w-5 h-5" />}
-          />
-        </div>
+            {/* Win Rate & Profit Factor (stacked) */}
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col gap-6 md:col-span-1"
+            >
+              <motion.div
+                whileHover={{ y: -4 }}
+                className="relative flex flex-1 flex-col justify-center overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20"
+              >
+                <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl" />
+                <h3 className="relative z-10 mb-3 flex items-center gap-2 font-medium text-muted-foreground">
+                  <Target className="size-4" /> {t("dashboard.stats.winRate")}
+                </h3>
+                <div className="relative z-10 mb-4 text-4xl font-bold text-foreground">
+                  {formatRatioPercent(stats.winRate, language)}
+                </div>
+                <div className="relative z-10 h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-indigo-500 transition-all duration-1000 ease-out"
+                    style={{ width: `${stats.winRate}%` }}
+                  />
+                </div>
+              </motion.div>
+              <motion.div
+                whileHover={{ y: -4 }}
+                className="flex flex-1 flex-col justify-center rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20"
+              >
+                <h3 className="mb-2 flex items-center gap-2 font-medium text-muted-foreground">
+                  <Activity className="size-4" />{" "}
+                  {t("dashboard.stats.profitFactor")}
+                </h3>
+                <div className="text-4xl font-bold text-foreground">
+                  {formatNumber(stats.profitFactor, language, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+              </motion.div>
+            </motion.div>
 
-        {/* Charts */}
-        <DashboardCharts trades={filteredTrades} />
+            {/* Trade Analysis */}
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -4 }}
+              className="flex flex-col justify-between rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 md:col-span-1 dark:hover:shadow-black/20"
+            >
+              <h3 className="mb-6 font-medium text-muted-foreground">
+                {t("dashboard.calendar.tradeAnalysis")}
+              </h3>
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {t("dashboard.stats.totalTrades")}
+                  </span>
+                  <span className="text-lg font-semibold text-foreground">
+                    {stats.totalTrades}
+                  </span>
+                </div>
+                <div className="h-px w-full bg-border" />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {t("dashboard.stats.averageWin")}
+                  </span>
+                  <span className="font-semibold text-emerald-500 dark:text-emerald-400">
+                    +{formatCurrency(stats.averageWin, language)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {t("dashboard.stats.averageLoss")}
+                  </span>
+                  <span className="font-semibold text-rose-500 dark:text-rose-400">
+                    -{formatCurrency(stats.averageLoss, language)}
+                  </span>
+                </div>
+                <div className="h-px w-full bg-border" />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {t("dashboard.stats.largestWin")}
+                  </span>
+                  <span className="font-medium text-emerald-500/80 dark:text-emerald-400/80">
+                    +{formatCurrency(stats.largestWin, language)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {t("dashboard.stats.largestLoss")}
+                  </span>
+                  <span className="font-medium text-rose-500/80 dark:text-rose-400/80">
+                    -{formatCurrency(Math.abs(stats.largestLoss), language)}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
 
-        {/* Secondary Stats */}
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
-          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <span className="mb-1 text-sm text-muted-foreground">
-              {t("dashboard.stats.averageWin")}
-            </span>
-            <span className="text-xl font-semibold text-emerald-400">
-              {formatCurrency(stats.averageWin, language)}
-            </span>
-          </div>
-          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <span className="mb-1 text-sm text-muted-foreground">
-              {t("dashboard.stats.averageLoss")}
-            </span>
-            <span className="text-xl font-semibold text-rose-400">
-              -{formatCurrency(stats.averageLoss, language)}
-            </span>
-          </div>
-          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <span className="mb-1 text-sm text-muted-foreground">
-              {t("dashboard.stats.largestWin")}
-            </span>
-            <span className="text-xl font-semibold text-emerald-400">
-              {formatCurrency(stats.largestWin, language)}
-            </span>
-          </div>
-          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <span className="mb-1 text-sm text-muted-foreground">
-              {t("dashboard.stats.largestLoss")}
-            </span>
-            <span className="text-xl font-semibold text-rose-400">
-              {formatCurrency(stats.largestLoss, language)}
-            </span>
-          </div>
-        </div>
+          {/* Charts */}
+          <motion.div variants={itemVariants}>
+            <DashboardCharts trades={filteredTrades} />
+          </motion.div>
 
-        {/* Trade List */}
-        <TradeListPanel trades={filteredTrades} onDelete={handleDeleteTrade} />
+          {/* Trade Calendar */}
+          <motion.div variants={itemVariants} className="mb-8">
+            <TradeCalendar trades={filteredTrades} />
+          </motion.div>
+
+          {/* Trade List */}
+          <motion.div variants={itemVariants}>
+            <TradeListPanel
+              trades={filteredTrades}
+              onDelete={handleDeleteTrade}
+            />
+          </motion.div>
+        </motion.div>
       </main>
 
       {/* Modals */}
