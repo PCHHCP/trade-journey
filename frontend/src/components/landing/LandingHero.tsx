@@ -16,9 +16,6 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
   const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const sectionInitial = prefersReducedMotion
-    ? false
-    : { opacity: 0, scale: 0.98, y: 20 };
   const buttonInitial = prefersReducedMotion ? false : { opacity: 0, y: 20 };
   const globeInitial = prefersReducedMotion
     ? false
@@ -26,13 +23,8 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
   const tickerInitial = prefersReducedMotion ? false : { opacity: 0 };
 
   return (
-    <motion.section
-      initial={sectionInitial}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: HERO_EASE }}
-      className="relative flex min-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-[var(--landing-border)] bg-[var(--landing-shell)] shadow-2xl lg:min-h-[calc(100dvh-3.5rem)]"
-    >
-      <div className="absolute inset-0 -z-10 bg-[var(--landing-shell-muted)]" />
+    <section className="relative flex min-h-[calc(100dvh-2.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-[var(--landing-border)] bg-[var(--landing-shell)] shadow-2xl transition-colors duration-500 lg:min-h-[calc(100dvh-3.5rem)]">
+      <div className="absolute inset-0 -z-10 bg-[var(--landing-shell-muted)] transition-colors duration-500" />
       <div className="relative border-b border-[var(--landing-border)] px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center justify-between gap-4">
@@ -251,6 +243,6 @@ export function LandingHero({ onLogin }: LandingHeroProps) {
       >
         <MarketTicker />
       </motion.div>
-    </motion.section>
+    </section>
   );
 }

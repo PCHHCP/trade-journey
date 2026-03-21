@@ -17,6 +17,7 @@ import {
   Filter,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { AccountMenu } from "@/components/layout/AccountMenu";
 import { useTheme } from "@/hooks/useTheme";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
@@ -129,7 +130,7 @@ export function Dashboard() {
               Dashboard Overview
             </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
             <ThemeToggle />
             <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
               <Filter className="size-4 text-muted-foreground" />
@@ -186,6 +187,7 @@ export function Dashboard() {
               <Plus className="size-4" />
               Log Trade
             </button>
+            <AccountMenu compact className="bg-card sm:ml-auto" />
           </div>
         </div>
 

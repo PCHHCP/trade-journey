@@ -130,11 +130,11 @@ export function LandingHeroGlobe() {
       mapBrightness: 10,
       mapBaseBrightness: 0,
       baseColor:
-        resolvedTheme === "dark" ? [0.78, 0.78, 0.78] : [0.24, 0.32, 0.46],
+        resolvedTheme === "dark" ? [0.78, 0.78, 0.78] : [1, 1, 1],
       markerColor:
-        resolvedTheme === "dark" ? [0.24, 0.56, 1] : [0.03, 0.49, 0.75],
+        resolvedTheme === "dark" ? [0.24, 0.56, 1] : [0.1, 0.6, 1],
       glowColor:
-        resolvedTheme === "dark" ? [0.36, 0.22, 0.82] : [0.17, 0.53, 0.77],
+        resolvedTheme === "dark" ? [0.36, 0.22, 0.82] : [0.8, 0.9, 1],
       opacity: 1,
       offset: [0, 0],
       markers: COBE_MARKERS,
