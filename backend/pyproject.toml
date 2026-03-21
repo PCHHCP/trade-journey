@@ -12,6 +12,8 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "python-jose[cryptography]>=3.3.0",
     "httpx>=0.28.0",
+    "python-multipart>=0.0.22",
+    "openpyxl>=3.1.5",
 ]
 
 [dependency-groups]
@@ -36,6 +38,10 @@ plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = ["jose.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["openpyxl.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

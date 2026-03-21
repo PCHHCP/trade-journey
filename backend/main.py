@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.exceptions import AppException
-from app.routers import auth
+from app.routers import auth, trades
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,3 +39,4 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
 
 api_v1_prefix = "/api/v1"
 app.include_router(auth.router, prefix=api_v1_prefix)
+app.include_router(trades.router, prefix=api_v1_prefix)
