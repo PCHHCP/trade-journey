@@ -15,12 +15,15 @@ interface TickerItemProps {
 }
 
 function TickerItem({ name, value, change, direction }: TickerItemProps) {
-  const toneClass = direction === "up" ? "text-[#5fe0ff]" : "text-[#ff9f95]";
+  const toneClass =
+    direction === "up"
+      ? "text-[var(--ticker-up)]"
+      : "text-[var(--ticker-down)]";
   const marker = direction === "up" ? "▲" : "▼";
 
   return (
     <div className="flex shrink-0 items-center gap-3 px-5 py-4">
-      <span className="text-sm font-semibold tracking-[0.18em] text-white/65 uppercase">
+      <span className="text-sm font-semibold tracking-[0.18em] text-[var(--ticker-label)] uppercase">
         {name}
       </span>
       <span className={`text-lg font-medium ${toneClass}`}>
@@ -36,10 +39,10 @@ export function MarketTicker() {
   return (
     <div
       aria-label="市场行情滚动预留栏"
-      className="relative overflow-hidden border-t border-[#123f2d] bg-[#07110f]/88"
+      className="relative overflow-hidden border-t border-[var(--ticker-border)] bg-[var(--ticker-bg)]"
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#00d26a]/80 to-transparent" />
-      <div className="ticker-fade relative overflow-hidden border-t border-white/6">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--ticker-highlight)] to-transparent" />
+      <div className="ticker-fade relative overflow-hidden border-t border-[var(--ticker-divider)]">
         <div className="ticker-track flex min-w-max items-center">
           {items.map((item, index) => (
             <TickerItem

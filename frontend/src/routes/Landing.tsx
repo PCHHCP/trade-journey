@@ -77,7 +77,7 @@ export function Landing() {
   }
 
   return (
-    <div className="landing-grid min-h-screen bg-[#edf0ef]">
+    <div className="landing-grid min-h-screen bg-background">
       <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
         <LandingHero onLogin={() => setLoginOpen(true)} />
       </main>

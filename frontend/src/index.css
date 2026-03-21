@@ -39,6 +39,48 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --landing-shell: #fcfdff;
+  --landing-shell-muted: #f3f7fb;
+  --landing-border: rgba(15, 23, 42, 0.08);
+  --landing-border-strong: rgba(14, 165, 233, 0.18);
+  --landing-brand: #0284c7;
+  --landing-highlight: #059669;
+  --landing-text: #0f172a;
+  --landing-text-muted: rgba(15, 23, 42, 0.68);
+  --landing-control-bg: rgba(255, 255, 255, 0.78);
+  --landing-button-bg: rgba(255, 255, 255, 0.92);
+  --landing-button-hover: rgba(240, 249, 255, 0.95);
+  --landing-tooltip-bg: rgba(255, 255, 255, 0.92);
+  --ticker-bg: rgba(236, 253, 245, 0.88);
+  --ticker-border: rgba(16, 185, 129, 0.22);
+  --ticker-divider: rgba(148, 163, 184, 0.18);
+  --ticker-highlight: rgba(16, 185, 129, 0.72);
+  --ticker-label: rgba(15, 23, 42, 0.62);
+  --ticker-up: #0284c7;
+  --ticker-down: #dc2626;
+  --ticker-fade-solid: rgba(236, 253, 245, 1);
+  --ticker-fade-clear: rgba(236, 253, 245, 0);
+  --dashboard-shell: #f4f7fb;
+  --dashboard-grid-dot: rgba(148, 163, 184, 0.22);
+  --dashboard-chart-grid: rgba(148, 163, 184, 0.24);
+  --dashboard-tooltip-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  --hero-caret-color: rgba(15, 23, 42, 0.92);
+  --hero-caret-shadow: rgba(14, 165, 233, 0.24);
+  --globe-aura-primary: radial-gradient(
+    circle,
+    rgba(0, 210, 106, 0.16),
+    rgba(255, 255, 255, 0) 68%
+  );
+  --globe-aura-secondary: radial-gradient(
+    circle,
+    rgba(56, 189, 248, 0.18) 0%,
+    rgba(14, 165, 233, 0.12) 48%,
+    rgba(255, 255, 255, 0) 74%
+  );
+  --globe-marker: #38bdf8;
+  --globe-marker-shadow:
+    0 0 18px rgba(56, 189, 248, 0.55),
+    0 0 32px rgba(14, 165, 233, 0.22);
 }
 
 .dark {
@@ -73,6 +115,48 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --landing-shell: #1a1b1e;
+  --landing-shell-muted: #16171a;
+  --landing-border: rgba(255, 255, 255, 0.08);
+  --landing-border-strong: rgba(95, 224, 255, 0.28);
+  --landing-brand: #38bdf8;
+  --landing-highlight: #00d26a;
+  --landing-text: rgba(255, 255, 255, 0.96);
+  --landing-text-muted: rgba(255, 255, 255, 0.7);
+  --landing-control-bg: rgba(255, 255, 255, 0.03);
+  --landing-button-bg: #1a1b1e;
+  --landing-button-hover: rgba(26, 27, 30, 0.8);
+  --landing-tooltip-bg: rgba(7, 17, 25, 0.92);
+  --ticker-bg: rgba(7, 17, 15, 0.88);
+  --ticker-border: rgba(18, 63, 45, 1);
+  --ticker-divider: rgba(255, 255, 255, 0.06);
+  --ticker-highlight: rgba(0, 210, 106, 0.8);
+  --ticker-label: rgba(255, 255, 255, 0.65);
+  --ticker-up: #5fe0ff;
+  --ticker-down: #ff9f95;
+  --ticker-fade-solid: rgba(7, 17, 15, 1);
+  --ticker-fade-clear: rgba(7, 17, 15, 0);
+  --dashboard-shell: #16171a;
+  --dashboard-grid-dot: rgba(255, 255, 255, 0.08);
+  --dashboard-chart-grid: #2d2e33;
+  --dashboard-tooltip-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+  --hero-caret-color: rgba(255, 255, 255, 0.92);
+  --hero-caret-shadow: rgba(255, 255, 255, 0.45);
+  --globe-aura-primary: radial-gradient(
+    circle,
+    rgba(0, 210, 106, 0.22),
+    rgba(12, 15, 20, 0) 68%
+  );
+  --globe-aura-secondary: radial-gradient(
+    circle,
+    rgba(100, 70, 255, 0.22) 0%,
+    rgba(74, 114, 255, 0.14) 48%,
+    rgba(12, 15, 20, 0) 74%
+  );
+  --globe-marker: #8fe8ff;
+  --globe-marker-shadow:
+    0 0 18px rgba(95, 224, 255, 0.95),
+    0 0 32px rgba(56, 197, 234, 0.45);
 }
 
 @theme inline {
@@ -150,7 +234,7 @@
 @layer utilities {
   .bg-dot-pattern {
     background-image: radial-gradient(
-      rgba(255, 255, 255, 0.08) 1px,
+      var(--dashboard-grid-dot) 1px,
       transparent 1px
     );
     background-size: 24px 24px;
@@ -160,10 +244,10 @@
     background-image:
       radial-gradient(
         circle at 1px 1px,
-        rgba(9, 23, 18, 0.18) 1px,
+        rgba(14, 165, 233, 0.15) 1px,
         transparent 0
       ),
-      linear-gradient(180deg, #f6f8f7 0%, #edf0ef 100%);
+      linear-gradient(180deg, #f8fbff 0%, #eef4fa 100%);
     background-size:
       22px 22px,
       100% 100%;
@@ -190,12 +274,20 @@
 
   .ticker-fade::before {
     left: 0;
-    background: linear-gradient(90deg, rgba(7, 17, 15, 1), rgba(7, 17, 15, 0));
+    background: linear-gradient(
+      90deg,
+      var(--ticker-fade-solid),
+      var(--ticker-fade-clear)
+    );
   }
 
   .ticker-fade::after {
     right: 0;
-    background: linear-gradient(270deg, rgba(7, 17, 15, 1), rgba(7, 17, 15, 0));
+    background: linear-gradient(
+      270deg,
+      var(--ticker-fade-solid),
+      var(--ticker-fade-clear)
+    );
   }
 
   .hero-typewriter-caret {
@@ -204,8 +296,8 @@
     height: 0.82em;
     margin-left: 0.08em;
     transform: translateY(0.06em);
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
+    background: var(--hero-caret-color);
+    box-shadow: 0 0 12px var(--hero-caret-shadow);
     animation: hero-caret-blink 1s steps(1) infinite;
     vertical-align: baseline;
   }

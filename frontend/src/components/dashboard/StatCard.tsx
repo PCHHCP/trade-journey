@@ -23,16 +23,16 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "bg-[#1e1f23] p-6 rounded-2xl border border-white/5",
+        "rounded-2xl border border-border bg-card p-6 shadow-sm",
         className,
       )}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-slate-400">{title}</h3>
-        {icon && <div className="text-slate-500">{icon}</div>}
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        {icon && <div className="text-muted-foreground">{icon}</div>}
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-semibold tracking-tight text-white">
+        <span className="text-3xl font-semibold tracking-tight text-foreground">
           {value}
         </span>
       </div>
@@ -48,7 +48,7 @@ export function StatCard({
             {Math.abs(trend.value)}%
           </span>
           {trend.label && (
-            <span className="text-slate-500 ml-2">{trend.label}</span>
+            <span className="ml-2 text-muted-foreground">{trend.label}</span>
           )}
         </div>
       )}

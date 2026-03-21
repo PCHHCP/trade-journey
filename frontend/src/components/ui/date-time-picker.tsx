@@ -82,7 +82,7 @@ export function DateTimePicker({
           onSelect={handleDateSelect}
           month={month}
           onMonthChange={setMonth}
-          className="border-b border-white/5"
+          className="border-b border-border"
         />
         <div className="flex items-center justify-center gap-2 px-4 py-3">
           <TimeInput

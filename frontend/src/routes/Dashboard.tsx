@@ -16,6 +16,8 @@ import {
   Wallet,
   Filter,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { useTheme } from "@/hooks/useTheme";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { TradeListPanel } from "@/components/dashboard/TradeListPanel";
@@ -25,6 +27,7 @@ import { formatCurrency, formatPercentage } from "@/components/dashboard/utils";
 import type { DashboardTrade, TradeStats } from "@/components/dashboard/types";
 
 export function Dashboard() {
+  const { resolvedTheme } = useTheme();
   const [trades, setTrades] = useState<DashboardTrade[]>(initialTrades);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<string>("all");
@@ -114,70 +117,73 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#16171a] bg-dot-pattern flex flex-col">
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <div className="min-h-screen bg-[var(--dashboard-shell)] bg-dot-pattern text-foreground">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-8">
         {/* Filter Bar */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
-              <LineChart className="w-5 h-5" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <LineChart className="size-5" />
             </div>
-            <h2 className="text-lg font-medium text-white">
+            <h2 className="text-lg font-medium text-foreground">
               Dashboard Overview
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-[#1e1f23] border border-white/5 rounded-lg px-3 py-2">
-              <Filter className="w-4 h-4 text-slate-400" />
+            <ThemeToggle />
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+              <Filter className="size-4 text-muted-foreground" />
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="bg-transparent text-sm text-white focus:outline-none cursor-pointer"
+                className="cursor-pointer bg-transparent text-sm text-foreground focus:outline-none"
               >
-                <option value="all" className="bg-[#1e1f23]">
+                <option value="all" className="bg-card text-foreground">
                   All Time
                 </option>
-                <option value="7d" className="bg-[#1e1f23]">
+                <option value="7d" className="bg-card text-foreground">
                   Last 7 Days
                 </option>
-                <option value="30d" className="bg-[#1e1f23]">
+                <option value="30d" className="bg-card text-foreground">
                   Last 30 Days
                 </option>
-                <option value="month" className="bg-[#1e1f23]">
+                <option value="month" className="bg-card text-foreground">
                   This Month
                 </option>
-                <option value="year" className="bg-[#1e1f23]">
+                <option value="year" className="bg-card text-foreground">
                   This Year
                 </option>
-                <option value="custom" className="bg-[#1e1f23]">
+                <option value="custom" className="bg-card text-foreground">
                   Custom Range
                 </option>
               </select>
             </div>
 
             {dateFilter === "custom" && (
-              <div className="flex items-center gap-2 bg-[#1e1f23] border border-white/5 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
                 <input
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="bg-transparent text-sm text-white focus:outline-none [color-scheme:dark]"
+                  className="bg-transparent text-sm text-foreground focus:outline-none"
+                  style={{ colorScheme: resolvedTheme }}
                 />
-                <span className="text-slate-500">-</span>
+                <span className="text-muted-foreground">-</span>
                 <input
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="bg-transparent text-sm text-white focus:outline-none [color-scheme:dark]"
+                  className="bg-transparent text-sm text-foreground focus:outline-none"
+                  style={{ colorScheme: resolvedTheme }}
                 />
               </div>
             )}
 
             <button
               onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="size-4" />
               Log Trade
             </button>
           </div>
@@ -221,27 +227,35 @@ export function Dashboard() {
         <DashboardCharts trades={filteredTrades} />
 
         {/* Secondary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-[#1e1f23] p-5 rounded-2xl border border-white/5 flex flex-col justify-center">
-            <span className="text-sm text-slate-400 mb-1">Average Win</span>
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
+          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <span className="mb-1 text-sm text-muted-foreground">
+              Average Win
+            </span>
             <span className="text-xl font-semibold text-emerald-400">
               {formatCurrency(stats.averageWin)}
             </span>
           </div>
-          <div className="bg-[#1e1f23] p-5 rounded-2xl border border-white/5 flex flex-col justify-center">
-            <span className="text-sm text-slate-400 mb-1">Average Loss</span>
+          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <span className="mb-1 text-sm text-muted-foreground">
+              Average Loss
+            </span>
             <span className="text-xl font-semibold text-rose-400">
               -{formatCurrency(stats.averageLoss)}
             </span>
           </div>
-          <div className="bg-[#1e1f23] p-5 rounded-2xl border border-white/5 flex flex-col justify-center">
-            <span className="text-sm text-slate-400 mb-1">Largest Win</span>
+          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <span className="mb-1 text-sm text-muted-foreground">
+              Largest Win
+            </span>
             <span className="text-xl font-semibold text-emerald-400">
               {formatCurrency(stats.largestWin)}
             </span>
           </div>
-          <div className="bg-[#1e1f23] p-5 rounded-2xl border border-white/5 flex flex-col justify-center">
-            <span className="text-sm text-slate-400 mb-1">Largest Loss</span>
+          <div className="flex flex-col justify-center rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <span className="mb-1 text-sm text-muted-foreground">
+              Largest Loss
+            </span>
             <span className="text-xl font-semibold text-rose-400">
               {formatCurrency(stats.largestLoss)}
             </span>

@@ -1,10 +1,36 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tyche</title>
+    <script>
+      (() => {
+        const storageKey = "theme-preference";
+        const nightStartHour = 22;
+        const dayStartHour = 6;
+        const root = document.documentElement;
+        const storedTheme = window.localStorage.getItem(storageKey);
+        const theme =
+          storedTheme === "light" ||
+          storedTheme === "dark" ||
+          storedTheme === "system"
+            ? storedTheme
+            : "system";
+        const currentHour = new Date().getHours();
+        const resolvedTheme =
+          theme === "system"
+            ? currentHour >= nightStartHour || currentHour < dayStartHour
+              ? "dark"
+              : "light"
+            : theme;
+
+        root.classList.toggle("dark", resolvedTheme === "dark");
+        root.style.colorScheme = resolvedTheme;
+        root.dataset.theme = resolvedTheme;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -5,6 +5,7 @@ import {
   LANDING_HERO_MARKETS,
   type GlobeMarketDefinition,
 } from "@/components/landing/landingHeroMarkets";
+import { useTheme } from "@/hooks/useTheme";
 
 interface GlobeMarker extends GlobeMarketDefinition {
   label: string;
@@ -51,6 +52,7 @@ function getTooltipAnchorStyle(
 }
 
 export function LandingHeroGlobe() {
+  const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasHostRef = useRef<HTMLDivElement | null>(null);
   const globeRef = useRef<Globe | null>(null);
@@ -121,15 +123,18 @@ export function LandingHeroGlobe() {
       height: renderSize,
       phi: phiRef.current,
       theta: 0.22,
-      dark: 1,
+      dark: resolvedTheme === "dark" ? 1 : 0,
       diffuse: 1.6,
       scale: 1.15,
       mapSamples: 16000,
       mapBrightness: 10,
       mapBaseBrightness: 0,
-      baseColor: [0.78, 0.78, 0.78],
-      markerColor: [0.24, 0.56, 1],
-      glowColor: [0.36, 0.22, 0.82],
+      baseColor:
+        resolvedTheme === "dark" ? [0.78, 0.78, 0.78] : [0.24, 0.32, 0.46],
+      markerColor:
+        resolvedTheme === "dark" ? [0.24, 0.56, 1] : [0.03, 0.49, 0.75],
+      glowColor:
+        resolvedTheme === "dark" ? [0.36, 0.22, 0.82] : [0.17, 0.53, 0.77],
       opacity: 1,
       offset: [0, 0],
       markers: COBE_MARKERS,
@@ -162,7 +167,7 @@ export function LandingHeroGlobe() {
         canvasHost.replaceChildren();
       }
     };
-  }, [size]);
+  }, [resolvedTheme, size]);
 
   function setMarkerActive(markerId: string | null) {
     activeMarkerIdRef.current = markerId;
@@ -230,8 +235,8 @@ export function LandingHeroGlobe() {
           }
         }
       `}</style>
-      <div className="pointer-events-none absolute inset-x-[8%] top-[10%] h-[70%] rounded-full bg-[radial-gradient(circle,_rgba(0,210,106,0.22),_rgba(12,15,20,0)_68%)] blur-3xl" />
-      <div className="pointer-events-none absolute inset-[6%] rounded-full bg-[radial-gradient(circle,_rgba(100,70,255,0.22)_0%,_rgba(74,114,255,0.14)_48%,_rgba(12,15,20,0)_74%)] blur-2xl" />
+      <div className="pointer-events-none absolute inset-x-[8%] top-[10%] h-[70%] rounded-full bg-[var(--globe-aura-primary)] blur-3xl" />
+      <div className="pointer-events-none absolute inset-[6%] rounded-full bg-[var(--globe-aura-secondary)] blur-2xl" />
 
       <div
         ref={containerRef}
@@ -269,7 +274,7 @@ export function LandingHeroGlobe() {
             onBlur={() => handleMarkerPointerLeave(marker.id)}
           >
             <span
-              className="pointer-events-none size-3.5 rounded-full bg-[#8fe8ff] shadow-[0_0_18px_rgba(95,224,255,0.95),0_0_32px_rgba(56,197,234,0.45)] motion-reduce:animate-none"
+              className="pointer-events-none size-3.5 rounded-full bg-[var(--globe-marker)] shadow-[var(--globe-marker-shadow)] motion-reduce:animate-none"
               style={{
                 animation: "market-marker-breathe 1.8s ease-in-out infinite",
               }}
@@ -279,16 +284,16 @@ export function LandingHeroGlobe() {
 
         {activeMarker ? (
           <div
-            className="absolute z-30 min-w-[15rem] rounded-2xl border border-white/12 bg-[#071119]/92 px-4 py-3 text-left shadow-[0_18px_50px_rgba(0,0,0,0.38)] backdrop-blur-md"
+            className="absolute z-30 min-w-[15rem] rounded-2xl border border-[var(--landing-border-strong)] bg-[var(--landing-tooltip-bg)] px-4 py-3 text-left shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-md"
             style={getTooltipAnchorStyle(activeMarker.id)}
           >
-            <p className="text-[0.62rem] font-semibold tracking-[0.28em] text-[#00d26a] uppercase">
+            <p className="text-[0.62rem] font-semibold tracking-[0.28em] text-[var(--landing-highlight)] uppercase">
               {activeMarker.code}
             </p>
-            <p className="mt-1 text-sm font-semibold tracking-[0.01em] text-white">
+            <p className="mt-1 text-sm font-semibold tracking-[0.01em] text-[var(--landing-text)]">
               {activeMarker.name}
             </p>
-            <p className="mt-2 text-[0.68rem] tracking-[0.16em] text-white/70 uppercase">
+            <p className="mt-2 text-[0.68rem] tracking-[0.16em] text-[var(--landing-text-muted)] uppercase">
               {activeMarker.marketType} / {activeMarker.country}
             </p>
           </div>

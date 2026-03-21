@@ -15,13 +15,15 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
   );
 
   return (
-    <div className="bg-[#1e1f23] rounded-2xl border border-white/5 overflow-hidden">
-      <div className="p-6 border-b border-white/5 flex justify-between items-center">
-        <h3 className="text-base font-semibold text-white">Recent Trades</h3>
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <div className="flex items-center justify-between border-b border-border p-6">
+        <h3 className="text-base font-semibold text-foreground">
+          Recent Trades
+        </h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-slate-400 uppercase bg-[#16171a]/50 border-b border-white/5">
+          <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-6 py-4 font-medium">Date</th>
               <th className="px-6 py-4 font-medium">Product</th>
@@ -34,12 +36,12 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
               <th className="px-6 py-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-border">
             {sortedTrades.length === 0 ? (
               <tr>
                 <td
                   colSpan={9}
-                  className="px-6 py-8 text-center text-slate-400"
+                  className="px-6 py-8 text-center text-muted-foreground"
                 >
                   No trades recorded yet. Add your first trade to see it here.
                 </td>
@@ -48,12 +50,12 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
               sortedTrades.map((trade) => (
                 <tr
                   key={trade.id}
-                  className="hover:bg-white/5 transition-colors group"
+                  className="group transition-colors hover:bg-muted/40"
                 >
-                  <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                  <td className="whitespace-nowrap px-6 py-4 text-muted-foreground">
                     {format(parseISO(trade.date), "MMM dd, yyyy")}
                   </td>
-                  <td className="px-6 py-4 font-medium text-white">
+                  <td className="px-6 py-4 font-medium text-foreground">
                     {trade.product}
                   </td>
                   <td className="px-6 py-4">
@@ -73,13 +75,13 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                       {trade.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right font-mono text-slate-300">
+                  <td className="px-6 py-4 text-right font-mono text-muted-foreground">
                     {formatCurrency(trade.entryPrice)}
                   </td>
-                  <td className="px-6 py-4 text-right font-mono text-slate-300">
+                  <td className="px-6 py-4 text-right font-mono text-muted-foreground">
                     {formatCurrency(trade.exitPrice)}
                   </td>
-                  <td className="px-6 py-4 text-right font-mono text-slate-300">
+                  <td className="px-6 py-4 text-right font-mono text-muted-foreground">
                     {trade.lot}
                   </td>
                   <td className="px-6 py-4 text-right font-mono font-medium">
@@ -93,7 +95,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                     </span>
                   </td>
                   <td
-                    className="px-6 py-4 text-slate-400 max-w-[200px] truncate"
+                    className="max-w-[200px] truncate px-6 py-4 text-muted-foreground"
                     title={trade.notes}
                   >
                     {trade.notes || "-"}
@@ -101,7 +103,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => onDelete?.(trade.id)}
-                      className="text-slate-500 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"
+                      className="opacity-0 text-muted-foreground transition-colors group-hover:opacity-100 hover:text-rose-400"
                       aria-label="Delete trade"
                     >
                       Delete

@@ -58,19 +58,19 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
   }, [trades]);
 
   const tooltipStyle = {
-    backgroundColor: "#1e1f23",
-    borderColor: "#2d2e33",
-    color: "#f8fafc",
+    backgroundColor: "var(--card)",
+    borderColor: "var(--border)",
+    color: "var(--foreground)",
     borderRadius: "8px",
-    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.5)",
+    boxShadow: "var(--dashboard-tooltip-shadow)",
   };
-  const tooltipItemStyle = { color: "#f8fafc" };
+  const tooltipItemStyle = { color: "var(--foreground)" };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Cumulative PnL Chart */}
-      <div className="lg:col-span-2 bg-[#1e1f23] p-6 rounded-2xl border border-white/5">
-        <h3 className="text-base font-semibold text-white mb-6">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-2">
+        <h3 className="mb-6 text-base font-semibold text-foreground">
           Cumulative P&L
         </h3>
         <div className="h-[300px] w-full">
@@ -88,19 +88,19 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
-                stroke="#2d2e33"
+                stroke="var(--dashboard-chart-grid)"
               />
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 dy={10}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 tickFormatter={(val: number) => `$${val}`}
               />
               <Tooltip
@@ -125,11 +125,11 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
       </div>
 
       {/* Win/Loss Pie Chart */}
-      <div className="bg-[#1e1f23] p-6 rounded-2xl border border-white/5 flex flex-col">
-        <h3 className="text-base font-semibold text-white mb-6">
+      <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-6 text-base font-semibold text-foreground">
           Win / Loss Ratio
         </h3>
-        <div className="flex-1 min-h-[250px] w-full relative">
+        <div className="relative min-h-[250px] w-full flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -153,25 +153,25 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none flex-col">
-            <span className="text-2xl font-bold text-white">
+            <span className="text-2xl font-bold text-foreground">
               {trades.length > 0
                 ? Math.round((winLossData[0].value / trades.length) * 100)
                 : 0}
               %
             </span>
-            <span className="text-xs text-slate-400 uppercase tracking-wider">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
               Win Rate
             </span>
           </div>
         </div>
-        <div className="flex justify-center gap-6 mt-4">
+        <div className="mt-4 flex justify-center gap-6">
           {winLossData.map((item) => (
             <div key={item.name} className="flex items-center gap-2">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="text-sm text-slate-300">
+              <span className="text-sm text-muted-foreground">
                 {item.name} ({item.value})
               </span>
             </div>
@@ -180,8 +180,10 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
       </div>
 
       {/* Daily PnL Bar Chart */}
-      <div className="lg:col-span-3 bg-[#1e1f23] p-6 rounded-2xl border border-white/5">
-        <h3 className="text-base font-semibold text-white mb-6">Daily P&L</h3>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-3">
+        <h3 className="mb-6 text-base font-semibold text-foreground">
+          Daily P&L
+        </h3>
         <div className="h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -191,23 +193,23 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
-                stroke="#2d2e33"
+                stroke="var(--dashboard-chart-grid)"
               />
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 dy={10}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 tickFormatter={(val: number) => `$${val}`}
               />
               <Tooltip
-                cursor={{ fill: "#2d2e33" }}
+                cursor={{ fill: "var(--muted)" }}
                 contentStyle={tooltipStyle}
                 itemStyle={tooltipItemStyle}
                 formatter={(value) => [

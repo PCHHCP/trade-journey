@@ -43,7 +43,9 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
     }
 
     onSubmit({
-      date: date ? format(date, "yyyy-MM-dd'T'HH:mm") : format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+      date: date
+        ? format(date, "yyyy-MM-dd'T'HH:mm")
+        : format(new Date(), "yyyy-MM-dd'T'HH:mm"),
       product: formData.product.toUpperCase(),
       type: formData.type,
       entryPrice,
@@ -55,13 +57,15 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#1e1f23] rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh] border border-white/5">
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <h2 className="text-lg font-semibold text-white">Log New Trade</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+        <div className="flex items-center justify-between border-b border-border p-6">
+          <h2 className="text-lg font-semibold text-foreground">
+            Log New Trade
+          </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-300 transition-colors"
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
             <X className="w-5 h-5" />
           </button>
@@ -69,19 +73,18 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
 
         <form
           onSubmit={handleSubmit}
-          className="p-6 overflow-y-auto flex-1 flex flex-col gap-4"
+          className="flex flex-1 flex-col gap-4 overflow-y-auto p-6"
         >
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">Date</label>
-              <DateTimePicker
-                value={date}
-                onChange={setDate}
-              />
+              <label className="text-sm font-medium text-muted-foreground">
+                Date
+              </label>
+              <DateTimePicker value={date} onChange={setDate} />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">
+              <label className="text-sm font-medium text-muted-foreground">
                 Product
               </label>
               <input
@@ -92,16 +95,18 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, product: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm uppercase"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground uppercase focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300">Type</label>
-            <div className="relative flex rounded-lg border border-white/10 bg-[#16171a] p-1">
+            <label className="text-sm font-medium text-muted-foreground">
+              Type
+            </label>
+            <div className="relative flex rounded-lg border border-input bg-background p-1">
               <div
-                className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-indigo-600 transition-transform duration-200 ease-in-out"
+                className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-primary transition-transform duration-200 ease-in-out"
                 style={{
                   transform:
                     formData.type === "SHORT"
@@ -114,7 +119,10 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
                 onClick={() => setFormData({ ...formData, type: "LONG" })}
                 className="relative z-10 flex-1 py-2 text-sm font-medium text-center rounded-md transition-colors"
                 style={{
-                  color: formData.type === "LONG" ? "#fff" : "#94a3b8",
+                  color:
+                    formData.type === "LONG"
+                      ? "var(--primary-foreground)"
+                      : "var(--muted-foreground)",
                 }}
               >
                 Long
@@ -124,7 +132,10 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
                 onClick={() => setFormData({ ...formData, type: "SHORT" })}
                 className="relative z-10 flex-1 py-2 text-sm font-medium text-center rounded-md transition-colors"
                 style={{
-                  color: formData.type === "SHORT" ? "#fff" : "#94a3b8",
+                  color:
+                    formData.type === "SHORT"
+                      ? "var(--primary-foreground)"
+                      : "var(--muted-foreground)",
                 }}
               >
                 Short
@@ -134,7 +145,7 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">
+              <label className="text-sm font-medium text-muted-foreground">
                 Entry Price
               </label>
               <input
@@ -147,11 +158,11 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, entryPrice: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">
+              <label className="text-sm font-medium text-muted-foreground">
                 Exit Price
               </label>
               <input
@@ -164,13 +175,15 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, exitPrice: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300">Lot</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Lot
+            </label>
             <input
               type="number"
               step="0.01"
@@ -181,12 +194,12 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
               onChange={(e) =>
                 setFormData({ ...formData, lot: e.target.value })
               }
-              className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300">
+            <label className="text-sm font-medium text-muted-foreground">
               Notes (Optional)
             </label>
             <textarea
@@ -196,21 +209,21 @@ export function TradeForm({ onClose, onSubmit }: TradeFormProps) {
               onChange={(e) =>
                 setFormData({ ...formData, notes: e.target.value })
               }
-              className="w-full px-3 py-2 border border-white/10 bg-[#16171a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm resize-none"
+              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
-          <div className="pt-4 mt-auto border-t border-white/5 flex justify-end gap-3">
+          <div className="mt-auto flex justify-end gap-3 border-t border-border pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-300 bg-transparent border border-white/10 rounded-lg hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#1e1f23] focus:ring-indigo-500 transition-colors"
+              className="rounded-lg border border-border bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#1e1f23] focus:ring-indigo-500 transition-colors shadow-sm"
+              className="rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-card"
             >
               Save Trade
             </button>
