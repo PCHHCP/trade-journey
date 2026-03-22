@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal
 
 from pydantic import BaseModel
 
@@ -13,16 +12,16 @@ class TradeResponse(BaseModel):
     ticket: int
     symbol: str
     type: str
-    volume: Decimal
-    open_price: Decimal
-    stop_loss: Decimal | None
-    take_profit: Decimal | None
+    volume: float
+    open_price: float
+    stop_loss: float | None
+    take_profit: float | None
     open_time: datetime
     close_time: datetime
-    close_price: Decimal
-    commission: Decimal
-    swap: Decimal
-    profit: Decimal
+    close_price: float
+    commission: float
+    swap: float
+    profit: float
     created_at: datetime
     updated_at: datetime
 

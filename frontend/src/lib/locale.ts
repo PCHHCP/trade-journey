@@ -16,6 +16,7 @@ export function formatCurrency(
   return new Intl.NumberFormat(language, {
     style: "currency",
     currency,
+    currencyDisplay: "narrowSymbol",
     signDisplay: "auto",
     maximumFractionDigits: 2,
   }).format(value);

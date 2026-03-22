@@ -4,19 +4,18 @@ import { useTranslation } from "react-i18next";
 import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 import { useAppLanguage } from "@/hooks/useAppLanguage";
 import { cn } from "@/lib/utils";
-import type { DashboardTrade } from "./types";
+import type { TradeResponse } from "@/types/trade";
 import { formatCurrency, formatLongDate } from "@/lib/locale";
 
 interface TradeListPanelProps {
-  trades: DashboardTrade[];
-  onDelete?: (id: string) => void;
+  trades: TradeResponse[];
 }
 
-export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
+export function TradeListPanel({ trades }: TradeListPanelProps) {
   const { t } = useTranslation();
   const { language, dateFnsLocale } = useAppLanguage();
   const sortedTrades = [...trades].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    (a, b) => new Date(b.open_time).getTime() - new Date(a.open_time).getTime(),
   );
 
   return (
@@ -49,11 +48,8 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
               <th className="px-6 py-4 font-medium text-right">
                 {t("dashboard.table.pnl")}
               </th>
-              <th className="px-6 py-4 font-medium">
-                {t("dashboard.table.notes")}
-              </th>
               <th className="px-6 py-4 font-medium text-right">
-                {t("dashboard.table.actions")}
+                {t("dashboard.table.commission")}
               </th>
             </tr>
           </thead>
@@ -61,83 +57,76 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
             {sortedTrades.length === 0 ? (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={8}
                   className="px-6 py-8 text-center text-muted-foreground"
                 >
                   {t("dashboard.table.empty")}
                 </td>
               </tr>
             ) : (
-              sortedTrades.map((trade) => (
-                <tr
-                  key={trade.id}
-                  className="group transition-colors hover:bg-muted/40"
-                >
-                  <td className="whitespace-nowrap px-6 py-4 text-muted-foreground">
-                    {formatLongDate(
-                      parseISO(trade.date),
-                      language,
-                      dateFnsLocale,
-                    )}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-foreground">
-                    {trade.product}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
-                        trade.type === "LONG"
-                          ? "bg-[var(--profit-soft)] text-[var(--profit)]"
-                          : "bg-[var(--loss-soft)] text-[var(--loss)]",
-                      )}
-                    >
-                      {trade.type === "LONG" ? (
-                        <ArrowUpRight className="w-3 h-3" />
-                      ) : (
-                        <ArrowDownRight className="w-3 h-3" />
-                      )}
-                      {t(`dashboard.tradeTypes.${trade.type}`)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono text-muted-foreground">
-                    {formatCurrency(trade.entryPrice, language)}
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono text-muted-foreground">
-                    {formatCurrency(trade.exitPrice, language)}
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono text-muted-foreground">
-                    {trade.lot}
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono font-medium">
-                    <span
-                      className={
-                        trade.pnl >= 0
-                          ? "text-[var(--profit)]"
-                          : "text-[var(--loss)]"
-                      }
-                    >
-                      {trade.pnl >= 0 ? "+" : ""}
-                      {formatCurrency(trade.pnl, language)}
-                    </span>
-                  </td>
-                  <td
-                    className="max-w-[200px] truncate px-6 py-4 text-muted-foreground"
-                    title={trade.notes}
+              sortedTrades.map((trade) => {
+                const tradeType = trade.type.toUpperCase().includes("BUY")
+                  ? "LONG"
+                  : "SHORT";
+                return (
+                  <tr
+                    key={trade.id}
+                    className="group transition-colors hover:bg-muted/40"
                   >
-                    {trade.notes || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => onDelete?.(trade.id)}
-                      className="opacity-0 text-muted-foreground transition-colors group-hover:opacity-100 hover:text-[var(--loss)]"
-                      aria-label={t("dashboard.table.deleteTradeAria")}
-                    >
-                      {t("dashboard.actions.deleteTrade")}
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    <td className="whitespace-nowrap px-6 py-4 text-muted-foreground">
+                      {formatLongDate(
+                        parseISO(trade.open_time),
+                        language,
+                        dateFnsLocale,
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-foreground">
+                      {trade.symbol}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
+                          tradeType === "LONG"
+                            ? "bg-[var(--profit-soft)] text-[var(--profit)]"
+                            : "bg-[var(--loss-soft)] text-[var(--loss)]",
+                        )}
+                      >
+                        {tradeType === "LONG" ? (
+                          <ArrowUpRight className="w-3 h-3" />
+                        ) : (
+                          <ArrowDownRight className="w-3 h-3" />
+                        )}
+                        {t(`dashboard.tradeTypes.${tradeType}`)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono text-muted-foreground">
+                      {formatCurrency(trade.open_price, language)}
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono text-muted-foreground">
+                      {formatCurrency(trade.close_price, language)}
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono text-muted-foreground">
+                      {trade.volume}
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono font-medium">
+                      <span
+                        className={
+                          trade.profit >= 0
+                            ? "text-[var(--profit)]"
+                            : "text-[var(--loss)]"
+                        }
+                      >
+                        {trade.profit >= 0 ? "+" : ""}
+                        {formatCurrency(trade.profit, language)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono text-muted-foreground">
+                      {formatCurrency(trade.commission, language)}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

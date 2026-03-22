@@ -1,15 +1,3 @@
-export interface DashboardTrade {
-  id: string;
-  date: string;
-  product: string;
-  type: "LONG" | "SHORT";
-  entryPrice: number;
-  exitPrice: number;
-  lot: number;
-  pnl: number;
-  notes?: string;
-}
-
 export interface TradeStats {
   totalTrades: number;
   winRate: number;

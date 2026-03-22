@@ -20,7 +20,7 @@ import {
   PanelHeader,
   PanelTitle,
 } from "@/components/ui/panel";
-import type { DashboardTrade } from "./types";
+import type { TradeResponse } from "@/types/trade";
 import { formatChartDate, formatCurrency, formatNumber } from "@/lib/locale";
 
 const tooltipStyle = {
@@ -33,7 +33,7 @@ const tooltipStyle = {
 const tooltipItemStyle = { color: "var(--foreground)" };
 
 interface DashboardChartsProps {
-  trades: DashboardTrade[];
+  trades: TradeResponse[];
 }
 
 export function DashboardCharts({ trades }: DashboardChartsProps) {
@@ -41,7 +41,8 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
   const { language, dateFnsLocale } = useAppLanguage();
   const sortedTrades = useMemo(() => {
     return [...trades].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      (a, b) =>
+        new Date(a.open_time).getTime() - new Date(b.open_time).getTime(),
     );
   }, [trades]);
 
@@ -49,8 +50,8 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
     return sortedTrades.reduce<{ date: string; pnl: number }[]>((acc, t) => {
       const prev = acc.length > 0 ? acc[acc.length - 1].pnl : 0;
       acc.push({
-        date: formatChartDate(parseISO(t.date), language, dateFnsLocale),
-        pnl: prev + t.pnl,
+        date: formatChartDate(parseISO(t.open_time), language, dateFnsLocale),
+        pnl: prev + t.profit,
       });
       return acc;
     }, []);
@@ -60,11 +61,11 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
     const dailyMap = new Map<string, number>();
     sortedTrades.forEach((t) => {
       const dateStr = formatChartDate(
-        parseISO(t.date),
+        parseISO(t.open_time),
         language,
         dateFnsLocale,
       );
-      dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + t.pnl);
+      dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + t.profit);
     });
     return Array.from(dailyMap.entries()).map(([date, pnl]) => ({ date, pnl }));
   }, [dateFnsLocale, language, sortedTrades]);

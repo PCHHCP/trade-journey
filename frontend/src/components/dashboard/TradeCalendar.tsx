@@ -26,7 +26,7 @@ import {
   PanelTitle,
 } from "@/components/ui/panel";
 import { formatCurrency } from "@/lib/locale";
-import type { DashboardTrade } from "./types";
+import type { TradeResponse } from "@/types/trade";
 
 function formatCompactCurrency(value: number) {
   const absValue = Math.abs(value);
@@ -38,7 +38,7 @@ function formatCompactCurrency(value: number) {
 }
 
 interface TradeCalendarProps {
-  trades: DashboardTrade[];
+  trades: TradeResponse[];
 }
 
 export function TradeCalendar({ trades }: TradeCalendarProps) {
@@ -67,9 +67,9 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
   }, [dateFnsLocale]);
 
   const tradesByDay = useMemo(() => {
-    const grouped: Record<string, DashboardTrade[]> = {};
+    const grouped: Record<string, TradeResponse[]> = {};
     trades.forEach((trade) => {
-      const dateStr = trade.date.split("T")[0];
+      const dateStr = trade.open_time.split("T")[0];
       if (!grouped[dateStr]) grouped[dateStr] = [];
       grouped[dateStr].push(trade);
     });
@@ -78,11 +78,11 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
 
   const monthlyStats = useMemo(() => {
     const currentMonthTrades = trades.filter((t) =>
-      isSameMonth(parseISO(t.date), currentDate),
+      isSameMonth(parseISO(t.open_time), currentDate),
     );
-    const pnl = currentMonthTrades.reduce((sum, t) => sum + t.pnl, 0);
+    const pnl = currentMonthTrades.reduce((sum, t) => sum + t.profit, 0);
     const daysTraded = new Set(
-      currentMonthTrades.map((t) => t.date.split("T")[0]),
+      currentMonthTrades.map((t) => t.open_time.split("T")[0]),
     ).size;
     return { pnl, daysTraded };
   }, [trades, currentDate]);
@@ -172,8 +172,8 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
                 const dayTrades = tradesByDay[dateStr] || [];
                 const isCurrentMonth = isSameMonth(day, currentDate);
 
-                const pnl = dayTrades.reduce((sum, t) => sum + t.pnl, 0);
-                const winCount = dayTrades.filter((t) => t.pnl > 0).length;
+                const pnl = dayTrades.reduce((sum, t) => sum + t.profit, 0);
+                const winCount = dayTrades.filter((t) => t.profit > 0).length;
                 const winRate =
                   dayTrades.length > 0
                     ? (winCount / dayTrades.length) * 100
@@ -251,9 +251,9 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
               const weekTrades = week.flatMap(
                 (day) => tradesByDay[format(day, "yyyy-MM-dd")] || [],
               );
-              const pnl = weekTrades.reduce((sum, t) => sum + t.pnl, 0);
+              const pnl = weekTrades.reduce((sum, t) => sum + t.profit, 0);
               const daysTraded = new Set(
-                weekTrades.map((t) => t.date.split("T")[0]),
+                weekTrades.map((t) => t.open_time.split("T")[0]),
               ).size;
 
               return (
