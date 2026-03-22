@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
   createLoginSchema,
@@ -10,19 +11,11 @@ import {
   type LoginFormValues,
   type RegisterFormValues,
 } from "@/lib/validations/auth";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/config/routes";
 import type { TFunction } from "i18next";
+import { cn } from "@/lib/utils";
 
 function GoogleIcon() {
   return (
@@ -74,12 +67,64 @@ function getAuthErrorMessage(
   return t("auth.errors.generic");
 }
 
+type AuthView = "login" | "register" | "registered" | "verify-email";
+
 interface LoginDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   authMessage?: string | null;
   onAuthMessageDismiss?: () => void;
 }
+
+/** Branded CTA button matching the Landing page's conic-gradient style. */
+function AuthCTA({
+  children,
+  disabled,
+  type = "button",
+  onClick,
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  type?: "button" | "submit";
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "group relative inline-flex h-10 w-full cursor-pointer overflow-hidden rounded-full p-[1px] transition-transform duration-300 focus:outline-none",
+        disabled
+          ? "pointer-events-none opacity-50"
+          : "hover:scale-[1.01] active:scale-[0.99]",
+      )}
+    >
+      <span className="absolute inset-[-1000%] animate-spin bg-[conic-gradient(from_90deg_at_50%_50%,var(--auth-brand)_0%,var(--auth-surface)_50%,var(--auth-brand)_100%)] opacity-70 transition-opacity duration-300 [animation-duration:4s] group-hover:opacity-100" />
+      <span className="inline-flex h-full w-full items-center justify-center gap-2 rounded-full bg-[var(--auth-brand)] px-6 text-sm font-semibold tracking-wide text-white backdrop-blur-3xl transition-all duration-300">
+        {children}
+      </span>
+    </button>
+  );
+}
+
+/** Divider with centered text, using auth tokens. */
+function AuthDivider({ text }: { text: string }) {
+  return (
+    <div className="relative flex items-center justify-center py-1">
+      <div className="absolute inset-x-0 top-1/2 h-px bg-[var(--auth-divider)]" />
+      <span className="relative bg-[var(--auth-surface)] px-3 text-xs tracking-wider text-[var(--auth-text-muted)] uppercase">
+        {text}
+      </span>
+    </div>
+  );
+}
+
+const PANEL_VARIANTS = {
+  enter: { opacity: 0, y: 6 },
+  center: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -6 },
+};
 
 export function LoginDialog({
   open,
@@ -89,9 +134,7 @@ export function LoginDialog({
 }: LoginDialogProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [view, setView] = useState<
-    "login" | "register" | "registered" | "verify-email"
-  >("login");
+  const [view, setView] = useState<AuthView>("login");
   const [error, setError] = useState<string | null>(null);
   const [oauthLoading, setOauthLoading] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -147,9 +190,7 @@ export function LoginDialog({
     setError(null);
   }
 
-  function switchView(
-    newView: "login" | "register" | "registered" | "verify-email",
-  ) {
+  function switchView(newView: AuthView) {
     resetForms();
     setView(newView);
   }
@@ -286,27 +327,15 @@ export function LoginDialog({
     }
   }
 
-  const viewConfig = {
-    login: {
-      title: t("auth.dialog.loginTitle"),
-      description: t("auth.dialog.loginDescription"),
-    },
-    register: {
-      title: t("auth.dialog.registerTitle"),
-      description: t("auth.dialog.registerDescription"),
-    },
-    registered: {
-      title: t("auth.dialog.registeredTitle"),
-      description: t("auth.dialog.registeredDescription"),
-    },
-    "verify-email": {
-      title: t("auth.dialog.verifyEmailTitle"),
-      description: t("auth.dialog.verifyEmailDescription"),
-    },
-  } as const;
+  const viewDescription: Record<AuthView, string> = {
+    login: t("auth.dialog.loginDescription"),
+    register: t("auth.dialog.registerDescription"),
+    registered: t("auth.dialog.registeredDescription"),
+    "verify-email": t("auth.dialog.verifyEmailDescription"),
+  };
 
   return (
-    <Dialog
+    <DialogPrimitive.Root
       open={open}
       onOpenChange={(nextOpen) => {
         onOpenChange(nextOpen);
@@ -316,248 +345,301 @@ export function LoginDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md" showCloseButton={!authMessage}>
-        <DialogHeader>
-          <DialogTitle>{viewConfig[view].title}</DialogTitle>
-          <DialogDescription>{viewConfig[view].description}</DialogDescription>
-        </DialogHeader>
+      <DialogPrimitive.Portal>
+        {/* Backdrop — frosted glass with brand tint */}
+        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
 
-        <div className="grid gap-4">
-          {!isSupabaseConfigured && (
-            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-              {t("auth.dialog.missingSupabaseConfig")}
+        {/* Auth Surface */}
+        <DialogPrimitive.Popup className="fixed top-1/2 left-1/2 z-50 w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 outline-none sm:max-w-[26rem] data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
+          <div className="overflow-hidden rounded-2xl border border-[var(--auth-border)] bg-[var(--auth-surface)] shadow-2xl ring-1 ring-[var(--auth-border-strong)]">
+            {/* Brand Header */}
+            <div className="flex flex-col items-center gap-1 px-6 pt-7 pb-2">
+              <span className="font-display text-3xl tracking-tight text-[var(--auth-brand)]">
+                Tyche
+              </span>
+              <DialogPrimitive.Description className="text-center text-sm text-[var(--auth-text-muted)]">
+                {viewDescription[view]}
+              </DialogPrimitive.Description>
             </div>
-          )}
 
-          {view === "login" && (
-            <>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleGoogleAuth}
-                disabled={isBusy || !isSupabaseConfigured}
-              >
-                <GoogleIcon />
-                {t("auth.dialog.googleLogin")}
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                {t("auth.dialog.googleFirstUse")}
-              </p>
-
-              <div className="relative flex items-center justify-center">
-                <Separator className="absolute w-full" />
-                <span className="relative bg-background px-2 text-xs text-muted-foreground">
-                  {t("auth.dialog.divider")}
-                </span>
-              </div>
-            </>
-          )}
-
-          {error && (
-            <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </div>
-          )}
-
-          {authMessage && (
-            <div className="grid gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-3 text-sm text-amber-700">
-              <p>{authMessage}</p>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  onAuthMessageDismiss?.();
-                  onOpenChange(false);
-                }}
-              >
-                {t("common.understood")}
-              </Button>
-            </div>
-          )}
-
-          {view === "registered" ? (
-            <div className="grid gap-4 text-center">
-              <div className="rounded-lg border border-[var(--brand)]/40 bg-[var(--brand-soft)] px-4 py-3 text-sm text-[var(--brand)]">
-                {t("auth.dialog.registeredAutoLogin")}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {t("auth.dialog.redirectCountdown", { count: countdown })}
-              </p>
-              <Button onClick={() => void handleRegisteredRedirect()}>
-                {t("common.confirm")}
-              </Button>
-            </div>
-          ) : view === "verify-email" ? (
-            <div className="grid gap-4">
-              <div className="rounded-lg border border-[var(--profit)]/40 bg-[var(--profit-soft)] px-4 py-3 text-sm text-[var(--profit)]">
-                {t("auth.dialog.verificationSentPrefix")}
-                <span className="ml-1 font-medium">
-                  {pendingVerificationEmail}
-                </span>
-                。
-              </div>
-              <div className="grid gap-2 text-sm text-muted-foreground">
-                <p>{t("auth.dialog.verificationAction")}</p>
-                <p>{t("auth.dialog.verificationHint")}</p>
-              </div>
-              <Button type="button" onClick={() => switchView("login")}>
-                {t("auth.dialog.backToLogin")}
-              </Button>
-            </div>
-          ) : view === "login" ? (
-            <form
-              onSubmit={loginForm.handleSubmit((values) => {
-                void handleLoginSubmit(values);
-              })}
-              className="grid gap-3"
-              noValidate
-            >
-              <div className="grid gap-1.5">
-                <Label htmlFor="email">{t("auth.dialog.emailLabel")}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder={t("auth.dialog.emailPlaceholder")}
-                  disabled={isBusy}
-                  {...loginForm.register("email")}
-                />
-                {loginForm.formState.errors.email && (
-                  <p className="text-xs text-destructive">
-                    {loginForm.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="password">
-                  {t("auth.dialog.passwordLabel")}
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={t("auth.dialog.passwordPlaceholder")}
-                  disabled={isBusy}
-                  {...loginForm.register("password")}
-                />
-                {loginForm.formState.errors.password && (
-                  <p className="text-xs text-destructive">
-                    {loginForm.formState.errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isBusy || !isSupabaseConfigured}
-              >
-                {isBusy
-                  ? t("auth.dialog.processing")
-                  : t("auth.dialog.signInAction")}
-              </Button>
-            </form>
-          ) : (
-            <form
-              onSubmit={registerForm.handleSubmit((values) => {
-                void handleRegisterSubmit(values);
-              })}
-              className="grid gap-3"
-              noValidate
-            >
-              <div className="grid gap-1.5">
-                <Label htmlFor="register-email">
-                  {t("auth.dialog.emailLabel")}
-                </Label>
-                <Input
-                  id="register-email"
-                  type="email"
-                  placeholder={t("auth.dialog.emailPlaceholder")}
-                  disabled={isBusy}
-                  {...registerForm.register("email")}
-                />
-                {registerForm.formState.errors.email && (
-                  <p className="text-xs text-destructive">
-                    {registerForm.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="register-password">
-                  {t("auth.dialog.passwordLabel")}
-                </Label>
-                <Input
-                  id="register-password"
-                  type="password"
-                  placeholder={t("auth.dialog.passwordPlaceholder")}
-                  disabled={isBusy}
-                  {...registerForm.register("password")}
-                />
-                {registerForm.formState.errors.password && (
-                  <p className="text-xs text-destructive">
-                    {registerForm.formState.errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="confirmPassword">
-                  {t("auth.dialog.confirmPasswordLabel")}
-                </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder={t("auth.dialog.confirmPasswordPlaceholder")}
-                  disabled={isBusy}
-                  {...registerForm.register("confirmPassword")}
-                />
-                {registerForm.formState.errors.confirmPassword && (
-                  <p className="text-xs text-destructive">
-                    {registerForm.formState.errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isBusy || !isSupabaseConfigured}
-              >
-                {isBusy
-                  ? t("auth.dialog.processing")
-                  : t("auth.dialog.registerAction")}
-              </Button>
-            </form>
-          )}
-
-          <p className="text-center text-sm text-muted-foreground">
-            {view === "login" ? (
-              <>
-                {t("auth.dialog.noAccountPrefix")}
-                <button
-                  type="button"
-                  className="text-primary underline underline-offset-4 hover:text-primary/80"
-                  onClick={() => switchView("register")}
+            {/* Content */}
+            <div className="px-6 pt-3 pb-6">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={view}
+                  variants={PANEL_VARIANTS}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="grid gap-4"
                 >
-                  {t("auth.dialog.noAccountAction")}
-                </button>
-              </>
-            ) : (
-              <>
-                {t("auth.dialog.hasAccountPrefix")}
-                <button
-                  type="button"
-                  className="text-primary underline underline-offset-4 hover:text-primary/80"
-                  onClick={() => switchView("login")}
+                  {/* Supabase missing warning */}
+                  {!isSupabaseConfigured && (
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-500/8 px-3 py-2.5 text-xs leading-relaxed text-amber-700 dark:text-amber-400">
+                      {t("auth.dialog.missingSupabaseConfig")}
+                    </div>
+                  )}
+
+                  {/* Error banner */}
+                  {error && (
+                    <div className="rounded-xl border border-destructive/40 bg-destructive/8 px-3 py-2.5 text-xs leading-relaxed text-destructive">
+                      {error}
+                    </div>
+                  )}
+
+                  {/* Auth message (e.g. expired session) */}
+                  {authMessage && (
+                    <div className="grid gap-3 rounded-xl border border-amber-500/30 bg-amber-500/8 px-3 py-3 text-xs leading-relaxed text-amber-700 dark:text-amber-400">
+                      <p>{authMessage}</p>
+                      <AuthCTA
+                        onClick={() => {
+                          onAuthMessageDismiss?.();
+                          onOpenChange(false);
+                        }}
+                      >
+                        {t("common.understood")}
+                      </AuthCTA>
+                    </div>
+                  )}
+
+                  {/* ─── LOGIN VIEW ─── */}
+                  {view === "login" && (
+                    <>
+                      {/* Google OAuth */}
+                      <button
+                        type="button"
+                        onClick={() => void handleGoogleAuth()}
+                        disabled={isBusy || !isSupabaseConfigured}
+                        className="flex h-10 w-full items-center justify-center gap-2.5 rounded-xl border border-[var(--auth-border-strong)] bg-[var(--auth-input-bg)] text-sm font-medium text-[var(--auth-text)] transition-all hover:border-[var(--auth-brand)] hover:bg-[var(--auth-surface-muted)] disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        <GoogleIcon />
+                        {t("auth.dialog.googleLogin")}
+                      </button>
+                      <p className="text-center text-[11px] leading-relaxed text-[var(--auth-text-muted)]">
+                        {t("auth.dialog.googleFirstUse")}
+                      </p>
+
+                      <AuthDivider text={t("auth.dialog.divider")} />
+
+                      {/* Email/password form */}
+                      <form
+                        onSubmit={loginForm.handleSubmit((values) => {
+                          void handleLoginSubmit(values);
+                        })}
+                        className="grid gap-3"
+                        noValidate
+                      >
+                        <AuthField
+                          id="email"
+                          label={t("auth.dialog.emailLabel")}
+                          type="email"
+                          placeholder={t("auth.dialog.emailPlaceholder")}
+                          disabled={isBusy}
+                          error={loginForm.formState.errors.email?.message}
+                          {...loginForm.register("email")}
+                        />
+                        <AuthField
+                          id="password"
+                          label={t("auth.dialog.passwordLabel")}
+                          type="password"
+                          placeholder={t("auth.dialog.passwordPlaceholder")}
+                          disabled={isBusy}
+                          error={loginForm.formState.errors.password?.message}
+                          {...loginForm.register("password")}
+                        />
+                        <div className="pt-1">
+                          <AuthCTA
+                            type="submit"
+                            disabled={isBusy || !isSupabaseConfigured}
+                          >
+                            {isBusy
+                              ? t("auth.dialog.processing")
+                              : t("auth.dialog.signInAction")}
+                          </AuthCTA>
+                        </div>
+                      </form>
+                    </>
+                  )}
+
+                  {/* ─── REGISTER VIEW ─── */}
+                  {view === "register" && (
+                    <form
+                      onSubmit={registerForm.handleSubmit((values) => {
+                        void handleRegisterSubmit(values);
+                      })}
+                      className="grid gap-3"
+                      noValidate
+                    >
+                      <AuthField
+                        id="register-email"
+                        label={t("auth.dialog.emailLabel")}
+                        type="email"
+                        placeholder={t("auth.dialog.emailPlaceholder")}
+                        disabled={isBusy}
+                        error={registerForm.formState.errors.email?.message}
+                        {...registerForm.register("email")}
+                      />
+                      <AuthField
+                        id="register-password"
+                        label={t("auth.dialog.passwordLabel")}
+                        type="password"
+                        placeholder={t("auth.dialog.passwordPlaceholder")}
+                        disabled={isBusy}
+                        error={registerForm.formState.errors.password?.message}
+                        {...registerForm.register("password")}
+                      />
+                      <AuthField
+                        id="confirmPassword"
+                        label={t("auth.dialog.confirmPasswordLabel")}
+                        type="password"
+                        placeholder={t(
+                          "auth.dialog.confirmPasswordPlaceholder",
+                        )}
+                        disabled={isBusy}
+                        error={
+                          registerForm.formState.errors.confirmPassword?.message
+                        }
+                        {...registerForm.register("confirmPassword")}
+                      />
+                      <div className="pt-1">
+                        <AuthCTA
+                          type="submit"
+                          disabled={isBusy || !isSupabaseConfigured}
+                        >
+                          {isBusy
+                            ? t("auth.dialog.processing")
+                            : t("auth.dialog.registerAction")}
+                        </AuthCTA>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* ─── REGISTERED (auto-login) VIEW ─── */}
+                  {view === "registered" && (
+                    <div className="grid gap-4 text-center">
+                      <div className="rounded-xl border border-[var(--auth-brand)]/30 bg-[var(--brand-soft)] px-4 py-3 text-sm text-[var(--auth-brand)]">
+                        {t("auth.dialog.registeredAutoLogin")}
+                      </div>
+                      <p className="text-sm text-[var(--auth-text-muted)]">
+                        {t("auth.dialog.redirectCountdown", {
+                          count: countdown,
+                        })}
+                      </p>
+                      <AuthCTA onClick={() => void handleRegisteredRedirect()}>
+                        {t("common.confirm")}
+                      </AuthCTA>
+                    </div>
+                  )}
+
+                  {/* ─── VERIFY EMAIL VIEW ─── */}
+                  {view === "verify-email" && (
+                    <div className="grid gap-4">
+                      <div className="rounded-xl border border-[var(--profit)]/30 bg-[var(--profit-soft)] px-4 py-3 text-sm text-[var(--profit)]">
+                        {t("auth.dialog.verificationSentPrefix")}
+                        <span className="ml-1 font-medium">
+                          {pendingVerificationEmail}
+                        </span>
+                      </div>
+                      <div className="grid gap-2 text-sm text-[var(--auth-text-muted)]">
+                        <p>{t("auth.dialog.verificationAction")}</p>
+                        <p>{t("auth.dialog.verificationHint")}</p>
+                      </div>
+                      <AuthCTA onClick={() => switchView("login")}>
+                        {t("auth.dialog.backToLogin")}
+                      </AuthCTA>
+                    </div>
+                  )}
+
+                  {/* View switch link */}
+                  {(view === "login" || view === "register") && (
+                    <p className="text-center text-[13px] text-[var(--auth-text-muted)]">
+                      {view === "login" ? (
+                        <>
+                          {t("auth.dialog.noAccountPrefix")}{" "}
+                          <button
+                            type="button"
+                            className="font-medium text-[var(--auth-brand)] underline underline-offset-4 transition-colors hover:text-[var(--auth-text)]"
+                            onClick={() => switchView("register")}
+                          >
+                            {t("auth.dialog.noAccountAction")}
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {t("auth.dialog.hasAccountPrefix")}{" "}
+                          <button
+                            type="button"
+                            className="font-medium text-[var(--auth-brand)] underline underline-offset-4 transition-colors hover:text-[var(--auth-text)]"
+                            onClick={() => switchView("login")}
+                          >
+                            {t("auth.dialog.hasAccountAction")}
+                          </button>
+                        </>
+                      )}
+                    </p>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Close button — top right, subtle */}
+            {!authMessage && (
+              <DialogPrimitive.Close className="absolute top-3 right-3 flex size-7 items-center justify-center rounded-lg text-[var(--auth-text-muted)] transition-colors hover:bg-[var(--auth-surface-muted)] hover:text-[var(--auth-text)]">
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  {t("auth.dialog.hasAccountAction")}
-                </button>
-              </>
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+                <span className="sr-only">{t("common.cancel")}</span>
+              </DialogPrimitive.Close>
             )}
-          </p>
-        </div>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </DialogPrimitive.Popup>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
+
+/** A branded form field with label, input, and error message. */
+interface AuthFieldProps extends React.ComponentProps<"input"> {
+  label: string;
+  error?: string;
+}
+
+const AuthField = ({
+  ref,
+  label,
+  error,
+  id,
+  className,
+  ...props
+}: AuthFieldProps) => (
+  <div className="grid gap-1.5">
+    <label
+      htmlFor={id}
+      className="text-xs font-medium tracking-wide text-[var(--auth-text-muted)]"
+    >
+      {label}
+    </label>
+    <Input
+      ref={ref}
+      id={id}
+      className={cn(
+        "h-10 rounded-xl border-[var(--auth-input-border)] bg-[var(--auth-input-bg)] text-[var(--auth-text)] placeholder:text-[var(--auth-text-muted)]/60 focus-visible:border-[var(--auth-brand)] focus-visible:ring-[var(--auth-input-focus)]",
+        error && "border-destructive",
+        className,
+      )}
+      {...props}
+    />
+    {error && <p className="text-xs text-destructive">{error}</p>}
+  </div>
+);
+AuthField.displayName = "AuthField";

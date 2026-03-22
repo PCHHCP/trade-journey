@@ -10,7 +10,6 @@ import { AuthCallback } from "@/routes/AuthCallback";
 import { Dashboard } from "@/routes/Dashboard";
 import { TradeList } from "@/routes/TradeList";
 import { TradeDetail } from "@/routes/TradeDetail";
-import { Import } from "@/routes/Import";
 import { Analytics } from "@/routes/Analytics";
 import { AppErrorBoundary } from "@/components/layout/AppErrorBoundary";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
@@ -94,14 +93,6 @@ export function App() {
                 element={
                   <ProtectedRoute>
                     <TradeDetail />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.IMPORT}
-                element={
-                  <ProtectedRoute>
-                    <Import />
                   </ProtectedRoute>
                 }
               />

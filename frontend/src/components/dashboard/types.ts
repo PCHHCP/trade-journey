@@ -17,6 +17,4 @@ export interface TradeStats {
   profitFactor: number;
   averageWin: number;
   averageLoss: number;
-  largestWin: number;
-  largestLoss: number;
 }

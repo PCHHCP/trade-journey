@@ -6,19 +6,25 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import { parseISO } from "date-fns";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useAppLanguage } from "@/hooks/useAppLanguage";
 import type { DashboardTrade } from "./types";
 import { formatChartDate, formatCurrency, formatNumber } from "@/lib/locale";
+
+const tooltipStyle = {
+  backgroundColor: "var(--card)",
+  borderColor: "var(--border)",
+  color: "var(--foreground)",
+  borderRadius: "8px",
+  boxShadow: "var(--dashboard-tooltip-shadow)",
+};
+const tooltipItemStyle = { color: "var(--foreground)" };
 
 interface DashboardChartsProps {
   trades: DashboardTrade[];
@@ -57,35 +63,14 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
     return Array.from(dailyMap.entries()).map(([date, pnl]) => ({ date, pnl }));
   }, [dateFnsLocale, language, sortedTrades]);
 
-  const winLossData = useMemo(() => {
-    const wins = trades.filter((t) => t.pnl > 0).length;
-    const losses = trades.filter((t) => t.pnl <= 0).length;
-    return [
-      { name: t("dashboard.charts.wins"), value: wins, color: "oklch(0.60 0.19 165)" },
-      { name: t("dashboard.charts.losses"), value: losses, color: "oklch(0.58 0.22 25)" },
-    ];
-  }, [t, trades]);
-
-  const tooltipStyle = {
-    backgroundColor: "var(--card)",
-    borderColor: "var(--border)",
-    color: "var(--foreground)",
-    borderRadius: "8px",
-    boxShadow: "var(--dashboard-tooltip-shadow)",
-  };
-  const tooltipItemStyle = { color: "var(--foreground)" };
-
   return (
-    <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className="mb-8 space-y-6">
       {/* Cumulative PnL Chart */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 lg:col-span-2 dark:hover:shadow-black/20"
-      >
-        <h3 className="mb-6 text-base font-semibold text-foreground">
+      <div className="rounded-2xl border border-border bg-card p-6">
+        <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
           {t("dashboard.charts.cumulativePnl")}
         </h3>
-        <div className="h-[300px] w-full">
+        <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={cumulativeData}
@@ -139,78 +124,14 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </motion.div>
-
-      {/* Win/Loss Pie Chart */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        className="flex flex-col rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20"
-      >
-        <h3 className="mb-6 text-base font-semibold text-foreground">
-          {t("dashboard.charts.winLossRatio")}
-        </h3>
-        <div className="relative min-h-[250px] w-full flex-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={winLossData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-                stroke="none"
-              >
-                {winLossData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={tooltipStyle}
-                itemStyle={tooltipItemStyle}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none flex-col">
-            <span className="text-2xl font-bold text-foreground">
-              {formatNumber(
-                trades.length > 0
-                  ? Math.round((winLossData[0].value / trades.length) * 100)
-                  : 0,
-                language,
-              )}
-              %
-            </span>
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">
-              {t("dashboard.stats.winRate")}
-            </span>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-center gap-6">
-          {winLossData.map((item) => (
-            <div key={item.name} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="text-sm text-muted-foreground">
-                {item.name} ({item.value})
-              </span>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+      </div>
 
       {/* Daily PnL Bar Chart */}
-      <motion.div
-        whileHover={{ y: -4 }}
-        className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 lg:col-span-3 dark:hover:shadow-black/20"
-      >
-        <h3 className="mb-6 text-base font-semibold text-foreground">
+      <div className="rounded-2xl border border-border bg-card p-6">
+        <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
           {t("dashboard.charts.dailyPnl")}
         </h3>
-        <div className="h-[250px] w-full">
+        <div className="h-[220px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={dailyData}
@@ -259,7 +180,7 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -82,6 +82,19 @@
   --dashboard-chart-grid: oklch(0.50 0.04 270 / 18%);
   --dashboard-tooltip-shadow: 0 12px 28px oklch(0.18 0.02 270 / 12%);
 
+  /* Auth Dialog */
+  --auth-surface: oklch(0.97 0.01 270);
+  --auth-surface-muted: oklch(0.95 0.012 270);
+  --auth-border: oklch(0.50 0.20 270 / 10%);
+  --auth-border-strong: oklch(0.50 0.20 270 / 18%);
+  --auth-input-bg: oklch(1 0 0);
+  --auth-input-border: oklch(0.50 0.20 270 / 14%);
+  --auth-input-focus: oklch(0.50 0.20 270 / 28%);
+  --auth-brand: oklch(0.50 0.20 270);
+  --auth-text: oklch(0.18 0.02 270);
+  --auth-text-muted: oklch(0.18 0.02 270 / 56%);
+  --auth-divider: oklch(0.50 0.20 270 / 10%);
+
   /* Hero */
   --hero-caret-color: oklch(0.18 0.02 270 / 92%);
   --hero-caret-shadow: oklch(0.50 0.20 270 / 24%);
@@ -178,6 +191,19 @@
   --dashboard-grid-dot: oklch(1 0 0 / 6%);
   --dashboard-chart-grid: oklch(0.32 0.02 270);
   --dashboard-tooltip-shadow: 0 4px 6px -1px oklch(0 0 0 / 50%);
+
+  /* Auth Dialog */
+  --auth-surface: oklch(0.18 0.02 270);
+  --auth-surface-muted: oklch(0.16 0.018 270);
+  --auth-border: oklch(1 0 0 / 8%);
+  --auth-border-strong: oklch(0.68 0.19 270 / 22%);
+  --auth-input-bg: oklch(0.14 0.016 270);
+  --auth-input-border: oklch(1 0 0 / 10%);
+  --auth-input-focus: oklch(0.68 0.19 270 / 32%);
+  --auth-brand: oklch(0.68 0.19 270);
+  --auth-text: oklch(1 0 0 / 96%);
+  --auth-text-muted: oklch(1 0 0 / 52%);
+  --auth-divider: oklch(1 0 0 / 8%);
 
   /* Hero */
   --hero-caret-color: oklch(1 0 0 / 92%);

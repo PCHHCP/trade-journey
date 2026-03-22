@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Calendar as CalendarIcon,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useAppLanguage } from "@/hooks/useAppLanguage";
 import { formatCurrency } from "@/lib/locale";
@@ -96,10 +95,7 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
   }, [days]);
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20"
-    >
+    <div className="rounded-2xl border border-border bg-card p-6">
       {/* Header */}
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-4">
@@ -200,7 +196,7 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
               return (
                 <div
                   key={day.toString()}
-                  className={`flex min-h-[110px] flex-col rounded-xl border p-2 transition-colors ${bgClass}`}
+                  className={`flex min-h-[110px] flex-col rounded-lg border p-2 transition-colors ${bgClass}`}
                 >
                   <div className="mb-1 flex items-start justify-between">
                     {dayTrades.length > 0 ? (
@@ -255,7 +251,7 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
             return (
               <div
                 key={i}
-                className="flex h-[110px] flex-col items-center justify-center rounded-xl border border-border bg-muted/50 p-2"
+                className="flex h-[110px] flex-col items-center justify-center rounded-lg border border-border bg-muted/50 p-2"
               >
                 <span className="mb-1 text-xs font-medium text-muted-foreground">
                   {t("dashboard.calendar.week", { number: i + 1 })}
@@ -276,6 +272,6 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
           })}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
