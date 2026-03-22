@@ -162,11 +162,11 @@ export function Dashboard() {
     <motion.div
       className="min-h-screen text-foreground"
       animate={{
-        backgroundColor: backgroundTheme === "dark" ? "#16171a" : "#f4f7fb",
+        backgroundColor: backgroundTheme === "dark" ? "oklch(0.155 0.018 270)" : "oklch(0.97 0.008 270)",
         backgroundImage:
           backgroundTheme === "dark"
-            ? "radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px)"
-            : "radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px)",
+            ? "radial-gradient(oklch(1 0 0 / 6%) 1px, transparent 1px)"
+            : "radial-gradient(oklch(0.50 0.04 270 / 16%) 1px, transparent 1px)",
       }}
       transition={{ duration: 0.5 }}
       style={{ backgroundPosition: "0 0", backgroundSize: "24px 24px" }}
@@ -241,7 +241,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => setIsFormOpen(true)}
-                className="inline-flex w-[9.5rem] shrink-0 items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted dark:border-transparent dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700"
+                className="inline-flex w-[9.5rem] shrink-0 items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted dark:border-transparent dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
               >
                 <Plus className="size-4" />
                 {t("dashboard.actions.logTrade")}
@@ -259,7 +259,7 @@ export function Dashboard() {
               className="relative flex min-h-[260px] flex-col justify-center overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 md:col-span-2 dark:hover:shadow-black/20"
             >
               <div
-                className={`absolute -top-32 -right-32 h-96 w-96 rounded-full blur-[100px] transition-colors duration-500 ${stats.totalPnl >= 0 ? "bg-emerald-500 opacity-10 dark:opacity-20" : "bg-rose-500 opacity-10 dark:opacity-20"}`}
+                className={`absolute -top-32 -right-32 h-96 w-96 rounded-full blur-[100px] transition-colors duration-500 ${stats.totalPnl >= 0 ? "bg-[var(--profit)] opacity-10 dark:opacity-20" : "bg-[var(--loss)] opacity-10 dark:opacity-20"}`}
               />
               <div className="relative z-10">
                 <div className="mb-6 flex items-center gap-2">
@@ -271,7 +271,7 @@ export function Dashboard() {
                   </h3>
                 </div>
                 <div
-                  className={`text-6xl font-bold tracking-tight md:text-7xl ${stats.totalPnl >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}
+                  className={`text-6xl font-bold tracking-tight md:text-7xl ${stats.totalPnl >= 0 ? "text-[var(--profit)]" : "text-[var(--loss)]"}`}
                 >
                   {stats.totalPnl >= 0 ? "+" : ""}
                   {formatCurrency(stats.totalPnl, language)}
@@ -288,7 +288,7 @@ export function Dashboard() {
                 whileHover={{ y: -4 }}
                 className="relative flex flex-1 flex-col justify-center overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20"
               >
-                <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl" />
+                <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-[var(--brand-soft)] blur-3xl" />
                 <h3 className="relative z-10 mb-3 flex items-center gap-2 font-medium text-muted-foreground">
                   <Target className="size-4" /> {t("dashboard.stats.winRate")}
                 </h3>
@@ -297,7 +297,7 @@ export function Dashboard() {
                 </div>
                 <div className="relative z-10 h-2 w-full overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-indigo-500 transition-all duration-1000 ease-out"
+                    className="h-full rounded-full bg-[var(--brand)] transition-all duration-1000 ease-out"
                     style={{ width: `${stats.winRate}%` }}
                   />
                 </div>
@@ -342,7 +342,7 @@ export function Dashboard() {
                   <span className="text-sm text-muted-foreground">
                     {t("dashboard.stats.averageWin")}
                   </span>
-                  <span className="font-semibold text-emerald-500 dark:text-emerald-400">
+                  <span className="font-semibold text-[var(--profit)]">
                     +{formatCurrency(stats.averageWin, language)}
                   </span>
                 </div>
@@ -350,7 +350,7 @@ export function Dashboard() {
                   <span className="text-sm text-muted-foreground">
                     {t("dashboard.stats.averageLoss")}
                   </span>
-                  <span className="font-semibold text-rose-500 dark:text-rose-400">
+                  <span className="font-semibold text-[var(--loss)]">
                     -{formatCurrency(stats.averageLoss, language)}
                   </span>
                 </div>
@@ -359,7 +359,7 @@ export function Dashboard() {
                   <span className="text-sm text-muted-foreground">
                     {t("dashboard.stats.largestWin")}
                   </span>
-                  <span className="font-medium text-emerald-500/80 dark:text-emerald-400/80">
+                  <span className="font-medium text-[var(--profit)] opacity-80">
                     +{formatCurrency(stats.largestWin, language)}
                   </span>
                 </div>
@@ -367,7 +367,7 @@ export function Dashboard() {
                   <span className="text-sm text-muted-foreground">
                     {t("dashboard.stats.largestLoss")}
                   </span>
-                  <span className="font-medium text-rose-500/80 dark:text-rose-400/80">
+                  <span className="font-medium text-[var(--loss)] opacity-80">
                     -{formatCurrency(Math.abs(stats.largestLoss), language)}
                   </span>
                 </div>

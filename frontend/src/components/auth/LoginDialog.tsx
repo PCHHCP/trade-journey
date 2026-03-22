@@ -378,7 +378,7 @@ export function LoginDialog({
 
           {view === "registered" ? (
             <div className="grid gap-4 text-center">
-              <div className="rounded-lg border border-blue-500/40 bg-blue-500/10 px-4 py-3 text-sm text-blue-700">
+              <div className="rounded-lg border border-[var(--brand)]/40 bg-[var(--brand-soft)] px-4 py-3 text-sm text-[var(--brand)]">
                 {t("auth.dialog.registeredAutoLogin")}
               </div>
               <p className="text-sm text-muted-foreground">
@@ -390,7 +390,7 @@ export function LoginDialog({
             </div>
           ) : view === "verify-email" ? (
             <div className="grid gap-4">
-              <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700">
+              <div className="rounded-lg border border-[var(--profit)]/40 bg-[var(--profit-soft)] px-4 py-3 text-sm text-[var(--profit)]">
                 {t("auth.dialog.verificationSentPrefix")}
                 <span className="ml-1 font-medium">
                   {pendingVerificationEmail}

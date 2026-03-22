@@ -133,7 +133,7 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
             {t("dashboard.calendar.monthlyStats")}:
           </span>
           <span
-            className={`font-semibold ${monthlyStats.pnl >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}
+            className={`font-semibold ${monthlyStats.pnl >= 0 ? "text-[var(--profit)]" : "text-[var(--loss)]"}`}
           >
             {monthlyStats.pnl >= 0 ? "+" : ""}
             {formatCurrency(monthlyStats.pnl, language)}
@@ -182,14 +182,14 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
 
               if (dayTrades.length > 0) {
                 if (pnl > 0) {
-                  bgClass = "bg-emerald-500/10 border-emerald-500/20";
-                  textClass = "text-emerald-600 dark:text-emerald-400";
+                  bgClass = "bg-[var(--profit-soft)] border-[var(--profit)]/20";
+                  textClass = "text-[var(--profit)]";
                 } else if (pnl < 0) {
-                  bgClass = "bg-rose-500/10 border-rose-500/20";
-                  textClass = "text-rose-600 dark:text-rose-400";
+                  bgClass = "bg-[var(--loss-soft)] border-[var(--loss)]/20";
+                  textClass = "text-[var(--loss)]";
                 } else {
-                  bgClass = "bg-blue-500/10 border-blue-500/20";
-                  textClass = "text-blue-600 dark:text-blue-400";
+                  bgClass = "bg-[var(--neutral-accent-soft)] border-[var(--neutral-accent)]/20";
+                  textClass = "text-[var(--neutral-accent)]";
                 }
               }
 
@@ -261,7 +261,7 @@ export function TradeCalendar({ trades }: TradeCalendarProps) {
                   {t("dashboard.calendar.week", { number: i + 1 })}
                 </span>
                 <span
-                  className={`text-sm font-bold ${pnl > 0 ? "text-emerald-600 dark:text-emerald-400" : pnl < 0 ? "text-rose-600 dark:text-rose-400" : "text-muted-foreground"}`}
+                  className={`text-sm font-bold ${pnl > 0 ? "text-[var(--profit)]" : pnl < 0 ? "text-[var(--loss)]" : "text-muted-foreground"}`}
                 >
                   {pnl > 0 ? "+" : ""}
                   {formatCompactCurrency(pnl)}
