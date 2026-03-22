@@ -11,15 +11,18 @@ import {
   Activity,
   Target,
   Plus,
+  Upload,
   LineChart,
   Wallet,
   Calendar,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AccountMenu } from "@/components/layout/AccountMenu";
+import { ROUTES } from "@/config/routes";
 import { useAppLanguage } from "@/hooks/useAppLanguage";
 import { useDelayedResolvedTheme } from "@/hooks/useDelayedResolvedTheme";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
@@ -62,6 +65,7 @@ const itemVariants = {
 
 export function Dashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { language } = useAppLanguage();
   const backgroundTheme = useDelayedResolvedTheme(
     DASHBOARD_BACKGROUND_DELAY_MS,
@@ -228,6 +232,13 @@ export function Dashboard() {
                 </div>
               )}
 
+              <button
+                onClick={() => void navigate(ROUTES.IMPORT)}
+                className="inline-flex w-[9.5rem] shrink-0 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
+              >
+                <Upload className="size-4" />
+                {t("dashboard.actions.importData")}
+              </button>
               <button
                 onClick={() => setIsFormOpen(true)}
                 className="inline-flex w-[9.5rem] shrink-0 items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted dark:border-transparent dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700"
