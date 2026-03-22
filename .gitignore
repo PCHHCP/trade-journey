@@ -4,6 +4,7 @@
 .claude/
 .cursor/
 .trellis/
+.codex/
 
 # OS
 .DS_Store

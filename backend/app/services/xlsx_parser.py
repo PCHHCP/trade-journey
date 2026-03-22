@@ -1,5 +1,6 @@
 import logging
 import re
+import warnings
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
@@ -12,6 +13,33 @@ from openpyxl.worksheet.worksheet import Worksheet
 from app.exceptions import ValidationException
 
 logger = logging.getLogger(__name__)
+
+METADATA_LABEL_ALIASES = {
+    "account_name": ("名称", "name"),
+    "account_number": ("账户", "账号", "帐号", "account", "login"),
+    "company": ("公司", "company"),
+}
+
+HEADER_ALIASES = {
+    "open_time": ("开仓时间", "open time"),
+    "close_time": ("平仓时间", "close time"),
+    "time": ("时间", "time"),
+    "ticket": ("持仓", "票号", "ticket", "position"),
+    "symbol": ("交易品种", "品种", "symbol"),
+    "type": ("类型", "trade type", "type"),
+    "volume": ("交易量", "手数", "volume", "lots"),
+    "open_price": ("开仓价", "open price"),
+    "close_price": ("平仓价", "close price"),
+    "price": ("价位", "price"),
+    "stop_loss": ("止损", "s/l", "sl", "stop loss"),
+    "take_profit": ("止盈", "t/p", "tp", "take profit"),
+    "profit": ("盈利", "profit"),
+    "commission": ("手续费", "commission"),
+    "swap": ("库存费", "swap"),
+}
+
+SECTION_MARKERS = ("持仓", "positions", "deals")
+STOP_SECTION_MARKERS = ("订单", "orders")
 
 
 @dataclass
@@ -65,6 +93,47 @@ def _cell_text(cell: Cell) -> str:
     return str(cell.value).strip()
 
 
+def _normalize_text(value: object) -> str:
+    text = str(value).strip().replace("：", ":").replace("\n", " ")
+    text = re.sub(r"\s+", " ", text)
+    return text
+
+
+def _normalize_label(value: object) -> str:
+    text = _normalize_text(value).lower()
+    return text.replace(":", "").strip()
+
+
+def _extract_inline_label_value(text: str, aliases: tuple[str, ...]) -> str | None:
+    normalized = _normalize_text(text)
+    if ":" not in normalized:
+        return None
+
+    prefix, suffix = normalized.split(":", 1)
+    if _normalize_label(prefix) in {_normalize_label(alias) for alias in aliases}:
+        cleaned = suffix.strip()
+        return cleaned or None
+
+    return None
+
+
+def _iter_non_empty_row_texts(row: tuple[Cell, ...], start_index: int = 0) -> list[str]:
+    values: list[str] = []
+    for cell in row[start_index:]:
+        text = _cell_text(cell)
+        if text:
+            values.append(text)
+    return values
+
+
+def _parse_account_value(text: str) -> tuple[str, str]:
+    cleaned = _normalize_text(text)
+    match = re.match(r"(\d+)\s*(?:\((.+)\))?$", cleaned)
+    if match:
+        return match.group(1), (match.group(2) or "").strip()
+    return cleaned, ""
+
+
 def _extract_metadata(ws: Worksheet) -> tuple[str, str, str, str | None]:
     """Extract account metadata from the top rows of the report.
 
@@ -75,31 +144,64 @@ def _extract_metadata(ws: Worksheet) -> tuple[str, str, str, str | None]:
     platform = ""
     company: str | None = None
 
-    for row in ws.iter_rows(min_row=1, max_row=20, max_col=10):
-        for cell in row:
+    for row in ws.iter_rows(min_row=1, max_row=30, max_col=12):
+        for index, cell in enumerate(row):
             text = _cell_text(cell)
             if not text:
                 continue
 
-            if "名称:" in text or "名称：" in text:
-                # e.g., "名称: Bybit421782086"
-                account_name = re.sub(r"名称[:：]\s*", "", text)
+            account_name_value = _extract_inline_label_value(
+                text,
+                METADATA_LABEL_ALIASES["account_name"],
+            )
+            if account_name_value:
+                account_name = account_name_value
+                continue
 
-            elif "账户:" in text or "账户：" in text:
-                # e.g., "账户: 2086467 (UST, Bybit-Live, real, Hedge)"
-                cleaned = re.sub(r"账户[:：]\s*", "", text)
-                match = re.match(r"(\d+)\s*\((.+)\)", cleaned)
-                if match:
-                    account_number = match.group(1)
-                    platform = match.group(2).strip()
-                else:
-                    account_number = cleaned
+            account_value = _extract_inline_label_value(
+                text,
+                METADATA_LABEL_ALIASES["account_number"],
+            )
+            if account_value:
+                account_number, parsed_platform = _parse_account_value(account_value)
+                if parsed_platform:
+                    platform = parsed_platform
+                continue
 
-            elif "公司:" in text or "公司：" in text:
-                # e.g., "公司: Infra Capital Limited"
-                company = re.sub(r"公司[:：]\s*", "", text)
-                if not company:
-                    company = None
+            company_value = _extract_inline_label_value(text, METADATA_LABEL_ALIASES["company"])
+            if company_value:
+                company = company_value or None
+                continue
+
+            normalized_label = _normalize_label(text)
+            if normalized_label in {
+                _normalize_label(alias)
+                for alias in METADATA_LABEL_ALIASES["account_name"]
+            }:
+                next_values = _iter_non_empty_row_texts(row, index + 1)
+                if next_values:
+                    account_name = _normalize_text(next_values[0])
+                continue
+
+            if normalized_label in {
+                _normalize_label(alias)
+                for alias in METADATA_LABEL_ALIASES["account_number"]
+            }:
+                next_values = _iter_non_empty_row_texts(row, index + 1)
+                if next_values:
+                    joined_value = " ".join(next_values[:2])
+                    account_number, parsed_platform = _parse_account_value(joined_value)
+                    if parsed_platform:
+                        platform = parsed_platform
+                continue
+
+            if normalized_label in {
+                _normalize_label(alias) for alias in METADATA_LABEL_ALIASES["company"]
+            }:
+                next_values = _iter_non_empty_row_texts(row, index + 1)
+                if next_values:
+                    company = _normalize_text(next_values[0]) or None
+                continue
 
     if not account_name or not account_number:
         raise ValidationException("Cannot extract account metadata from XLSX report")
@@ -108,54 +210,71 @@ def _extract_metadata(ws: Worksheet) -> tuple[str, str, str, str | None]:
 
 
 def _find_positions_section(ws: Worksheet) -> int | None:
-    """Find the row number of the 持仓 (positions) header row."""
+    """Find the row number of the positions header row."""
     for row in ws.iter_rows(min_row=1):
-        texts = [_cell_text(c) for c in row]
-        # The header row contains "持仓" as well as column headers like "时间" and "交易品种"
-        if "持仓" in texts or any("持仓" in t for t in texts):
-            # Check if this is the actual column header row (has "时间" and "交易品种")
-            if any("时间" in t for t in texts) and any("交易品种" in t for t in texts):
-                return int(row[0].row)
+        header_keys = {
+            mapped_key
+            for cell in row
+            if (mapped_key := _map_single_header(_cell_text(cell))) is not None
+        }
+        if len(header_keys) >= 4 and ("ticket" in header_keys or "time" in header_keys):
+            return int(row[0].row)
+    return None
+
+
+def _map_single_header(text: str) -> str | None:
+    normalized = _normalize_label(text)
+    for key, aliases in HEADER_ALIASES.items():
+        if normalized in {_normalize_label(alias) for alias in aliases}:
+            return key
+    if any(marker in normalized for marker in SECTION_MARKERS):
+        return "section_marker"
     return None
 
 
 def _map_header_columns(header_row: tuple[Cell, ...]) -> dict[str, int]:
-    """Map Chinese header names to column indices."""
+    """Map header names to column indices."""
     mapping: dict[str, int] = {}
     price_count = 0
+    time_count = 0
 
     for i, cell in enumerate(header_row):
-        text = _cell_text(cell)
-        if text == "时间":
-            # First "时间" is open_time, second is close_time
-            if "open_time" not in mapping:
+        key = _map_single_header(_cell_text(cell))
+        if key in ("open_time", "close_time"):
+            mapping[key] = i
+        elif key == "time":
+            # First shared "time" is open_time, second is close_time
+            if time_count == 0:
                 mapping["open_time"] = i
             else:
                 mapping["close_time"] = i
-        elif text == "持仓":
+            time_count += 1
+        elif key == "ticket":
             mapping["ticket"] = i
-        elif text == "交易品种":
+        elif key == "symbol":
             mapping["symbol"] = i
-        elif text == "类型":
+        elif key == "type":
             mapping["type"] = i
-        elif text in ("交易量", "手数"):
+        elif key == "volume":
             mapping["volume"] = i
-        elif text == "价位":
-            # First "价位" is open_price, second is close_price
+        elif key in ("open_price", "close_price"):
+            mapping[key] = i
+        elif key == "price":
+            # First shared "price" is open_price, second is close_price
             if price_count == 0:
                 mapping["open_price"] = i
             else:
                 mapping["close_price"] = i
             price_count += 1
-        elif text == "止损":
+        elif key == "stop_loss":
             mapping["stop_loss"] = i
-        elif text == "止盈":
+        elif key == "take_profit":
             mapping["take_profit"] = i
-        elif text == "盈利":
+        elif key == "profit":
             mapping["profit"] = i
-        elif text == "手续费":
+        elif key == "commission":
             mapping["commission"] = i
-        elif text == "库存费":
+        elif key == "swap":
             mapping["swap"] = i
 
     return mapping
@@ -171,13 +290,28 @@ def _parse_trade_type(value: object) -> str:
     return text
 
 
+def _is_stop_section(text: str) -> bool:
+    normalized = _normalize_label(text)
+    return any(marker in normalized for marker in STOP_SECTION_MARKERS)
+
+
 def parse_trade_report(file_content: bytes) -> ParsedReport:
     """Parse an MT5 XLSX trade history report.
 
     Extracts account metadata and the 持仓 (positions/deals) section.
     """
     try:
-        wb = load_workbook(filename=BytesIO(file_content), read_only=True, data_only=True)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="Workbook contains no default style, apply openpyxl's default",
+                category=UserWarning,
+            )
+            wb = load_workbook(
+                filename=BytesIO(file_content),
+                read_only=True,
+                data_only=True,
+            )
     except Exception as e:
         raise ValidationException(f"Cannot read XLSX file: {e}")
 
@@ -214,7 +348,7 @@ def parse_trade_report(file_content: bytes) -> ParsedReport:
 
         # Stop at next section header ("订单") or empty rows
         first_text = _cell_text(cells[0]) if cells else ""
-        if "订单" in first_text:
+        if _is_stop_section(first_text):
             break
 
         # Check if the ticket column has a value (skip empty/summary rows)

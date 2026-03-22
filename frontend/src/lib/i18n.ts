@@ -174,6 +174,7 @@ const resources = {
           custom: "Custom Range",
         },
         actions: {
+          importData: "Import Data",
           logTrade: "Log Trade",
           confirmDeleteTrade: "Are you sure you want to delete this trade?",
           deleteTrade: "Delete",
@@ -257,6 +258,66 @@ const resources = {
         tradeList: "Trades",
         tradeDetail: "Trade {{id}}",
         import: "Import MT5 Data",
+      },
+      importPage: {
+        hero: {
+          eyebrow: "Manual Import",
+          title: "Upload your MT5 trade report",
+          description:
+            "Choose an MT5 XLSX history report and send it to the backend for parsing and storage. The import keeps your authenticated session, creates or reuses the trading account automatically, and skips duplicate trades safely.",
+          badges: {
+            authRequired: "Authenticated upload",
+            xlsxOnly: "XLSX only",
+            duplicateSafe: "Duplicate-safe import",
+          },
+        },
+        form: {
+          title: "Import trade history",
+          description:
+            "The backend will parse the report and return an import summary after the upload finishes.",
+          fileLabel: "Trade report file",
+          fileHint:
+            "Supported format: MT5 Chinese XLSX report. The backend currently accepts `.xlsx` files only.",
+          emptySelection: "Select an `.xlsx` trade report to begin the import.",
+          selectedMeta: "Selected file size: {{size}}",
+          submit: "Start import",
+          submitting: "Importing...",
+          reset: "Clear selection",
+        },
+        info: {
+          title: "What happens during import",
+          description:
+            "This page only handles secure upload. Parsing and persistence happen on the backend.",
+          steps: {
+            uploadTitle: "1. Upload the source file",
+            uploadDescription:
+              "Your browser sends the XLSX report as multipart form data with the current auth token.",
+            parseTitle: "2. Backend parses and stores trades",
+            parseDescription:
+              "The server extracts account metadata, imports new trades, and skips duplicate tickets for the same account.",
+            resultTitle: "3. Review the import summary",
+            resultDescription:
+              "After completion, you will see how many rows were imported or skipped and which trading account was matched.",
+          },
+        },
+        result: {
+          title: "Import completed",
+          description:
+            "The backend accepted the file and returned the latest import summary.",
+          imported: "Imported",
+          skipped: "Skipped",
+          accountTitle: "Matched trading account",
+          accountName: "Account name",
+          accountNumber: "Account number",
+          platform: "Platform",
+          company: "Company",
+          companyEmpty: "Not provided",
+        },
+        validation: {
+          required: "Please choose an XLSX file before submitting.",
+          fileType: "Only `.xlsx` files are supported for now.",
+          emptyFile: "The selected file is empty. Please choose another file.",
+        },
       },
     },
   },
@@ -415,6 +476,7 @@ const resources = {
           custom: "自定义区间",
         },
         actions: {
+          importData: "导入数据",
           logTrade: "记录交易",
           confirmDeleteTrade: "确定要删除这笔交易吗？",
           deleteTrade: "删除",
@@ -498,6 +560,63 @@ const resources = {
         tradeList: "交易列表",
         tradeDetail: "交易 {{id}}",
         import: "导入 MT5 数据",
+      },
+      importPage: {
+        hero: {
+          eyebrow: "手动导入",
+          title: "上传你的 MT5 交易报表",
+          description:
+            "选择一份 MT5 XLSX 历史报表后，前端会把文件发送给后端进行解析和入库。整个流程会复用当前登录态，自动创建或复用交易账户，并安全跳过重复交易。",
+          badges: {
+            authRequired: "需要登录后上传",
+            xlsxOnly: "仅支持 XLSX",
+            duplicateSafe: "重复交易自动跳过",
+          },
+        },
+        form: {
+          title: "导入交易历史",
+          description: "上传完成后，后端会负责解析报表并返回本次导入结果摘要。",
+          fileLabel: "交易报表文件",
+          fileHint:
+            "支持格式：MT5 中文 XLSX 报表。当前后端只接受 `.xlsx` 文件。",
+          emptySelection: "请选择一份 `.xlsx` 交易报表后开始导入。",
+          selectedMeta: "已选文件大小：{{size}}",
+          submit: "开始导入",
+          submitting: "正在导入...",
+          reset: "清空选择",
+        },
+        info: {
+          title: "导入过程中会发生什么",
+          description: "这个页面只负责安全上传，真正的解析和入库仍由后端完成。",
+          steps: {
+            uploadTitle: "1. 上传源文件",
+            uploadDescription:
+              "浏览器会携带当前登录态，把 XLSX 报表按 multipart form data 发送给后端。",
+            parseTitle: "2. 后端解析并写入交易数据",
+            parseDescription:
+              "服务端会提取账户信息、导入新增交易，并对同一账户下的重复 ticket 自动跳过。",
+            resultTitle: "3. 查看导入摘要",
+            resultDescription:
+              "导入完成后，页面会显示导入/跳过数量，以及本次匹配到的交易账户信息。",
+          },
+        },
+        result: {
+          title: "导入完成",
+          description: "后端已接收文件，并返回了最新的导入结果摘要。",
+          imported: "成功导入",
+          skipped: "跳过重复",
+          accountTitle: "匹配到的交易账户",
+          accountName: "账户名称",
+          accountNumber: "账户编号",
+          platform: "平台信息",
+          company: "公司",
+          companyEmpty: "未提供",
+        },
+        validation: {
+          required: "请先选择一个 XLSX 文件再提交。",
+          fileType: "当前仅支持上传 `.xlsx` 文件。",
+          emptyFile: "所选文件为空，请重新选择。",
+        },
       },
     },
   },
