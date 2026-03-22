@@ -86,11 +86,11 @@ export function Landing() {
     <motion.div
       className="landing-grid min-h-screen"
       animate={{
-        backgroundColor: backgroundTheme === "dark" ? "#0a0a0a" : "#f4f4f5",
+        backgroundColor: backgroundTheme === "dark" ? "oklch(0.10 0.015 270)" : "oklch(0.96 0.008 270)",
         backgroundImage:
           backgroundTheme === "dark"
-            ? "radial-gradient(#27272a 1.5px, transparent 1.5px)"
-            : "radial-gradient(#d4d4d8 1.5px, transparent 1.5px)",
+            ? "radial-gradient(oklch(0.24 0.015 270) 1.5px, transparent 1.5px)"
+            : "radial-gradient(oklch(0.82 0.01 270) 1.5px, transparent 1.5px)",
       }}
       transition={{ duration: 0.5 }}
     >

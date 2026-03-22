@@ -61,8 +61,8 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
     const wins = trades.filter((t) => t.pnl > 0).length;
     const losses = trades.filter((t) => t.pnl <= 0).length;
     return [
-      { name: t("dashboard.charts.wins"), value: wins, color: "#10b981" },
-      { name: t("dashboard.charts.losses"), value: losses, color: "#f43f5e" },
+      { name: t("dashboard.charts.wins"), value: wins, color: "oklch(0.60 0.19 165)" },
+      { name: t("dashboard.charts.losses"), value: losses, color: "oklch(0.58 0.22 25)" },
     ];
   }, [t, trades]);
 
@@ -93,8 +93,8 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
             >
               <defs>
                 <linearGradient id="colorPnl" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--brand)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--brand)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -131,7 +131,7 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
               <Area
                 type="monotone"
                 dataKey="pnl"
-                stroke="#6366f1"
+                stroke="var(--brand)"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorPnl)"
@@ -252,7 +252,7 @@ export function DashboardCharts({ trades }: DashboardChartsProps) {
                 {dailyData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.pnl >= 0 ? "#10b981" : "#f43f5e"}
+                    fill={entry.pnl >= 0 ? "var(--profit)" : "var(--loss)"}
                   />
                 ))}
               </Bar>

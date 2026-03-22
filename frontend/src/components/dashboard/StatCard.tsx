@@ -45,7 +45,7 @@ export function StatCard({
           <span
             className={cn(
               "font-medium",
-              trend.isPositive ? "text-emerald-400" : "text-rose-400",
+              trend.isPositive ? "text-[var(--profit)]" : "text-[var(--loss)]",
             )}
           >
             {trend.isPositive ? "+" : "-"}

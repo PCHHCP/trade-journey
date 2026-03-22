@@ -95,9 +95,9 @@ export function Import() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
       <section className="relative overflow-hidden rounded-[2rem] border border-border bg-card px-6 py-8 shadow-sm sm:px-8">
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,_rgba(34,197,94,0.16),_transparent_58%)]" />
+        <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,_var(--brand-soft),_transparent_58%)]" />
         <div className="relative flex flex-col gap-4">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium tracking-[0.24em] text-emerald-700 uppercase dark:text-emerald-300">
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[var(--brand)]/20 bg-[var(--brand-soft)] px-3 py-1 text-xs font-medium tracking-[0.24em] text-[var(--brand)] uppercase">
             <Upload className="size-3.5" />
             {t("importPage.hero.eyebrow")}
           </div>
@@ -276,8 +276,8 @@ export function Import() {
           </Card>
 
           {importTradesMutation.data ? (
-            <Card className="border border-emerald-500/20 bg-emerald-500/5 shadow-sm">
-              <CardHeader className="border-b border-emerald-500/10">
+            <Card className="border border-[var(--profit)]/20 bg-[var(--profit-soft)] shadow-sm">
+              <CardHeader className="border-b border-[var(--profit)]/10">
                 <CardTitle>{t("importPage.result.title")}</CardTitle>
                 <CardDescription>
                   {t("importPage.result.description")}
@@ -285,11 +285,11 @@ export function Import() {
               </CardHeader>
               <CardContent className="space-y-5 pt-6">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-emerald-500/10 bg-background/80 p-4">
+                  <div className="rounded-2xl border border-[var(--profit)]/10 bg-background/80 p-4">
                     <p className="text-xs uppercase text-muted-foreground">
                       {t("importPage.result.imported")}
                     </p>
-                    <p className="mt-2 text-3xl font-semibold text-emerald-600 dark:text-emerald-400">
+                    <p className="mt-2 text-3xl font-semibold text-[var(--profit)]">
                       {importTradesMutation.data.imported}
                     </p>
                   </div>

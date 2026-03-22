@@ -108,7 +108,7 @@ export function DateTimePicker({
           <Button
             variant="ghost"
             size="sm"
-            className="ml-2 text-xs text-indigo-400 hover:text-indigo-300"
+            className="ml-2 text-xs text-primary hover:text-primary/80"
             onClick={() => {
               const now = new Date();
               setHours(String(now.getHours()).padStart(2, "0"));

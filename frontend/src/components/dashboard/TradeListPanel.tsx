@@ -89,8 +89,8 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                       className={cn(
                         "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
                         trade.type === "LONG"
-                          ? "bg-emerald-500/10 text-emerald-400"
-                          : "bg-rose-500/10 text-rose-400",
+                          ? "bg-[var(--profit-soft)] text-[var(--profit)]"
+                          : "bg-[var(--loss-soft)] text-[var(--loss)]",
                       )}
                     >
                       {trade.type === "LONG" ? (
@@ -113,7 +113,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                   <td className="px-6 py-4 text-right font-mono font-medium">
                     <span
                       className={
-                        trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                        trade.pnl >= 0 ? "text-[var(--profit)]" : "text-[var(--loss)]"
                       }
                     >
                       {trade.pnl >= 0 ? "+" : ""}
@@ -129,7 +129,7 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => onDelete?.(trade.id)}
-                      className="opacity-0 text-muted-foreground transition-colors group-hover:opacity-100 hover:text-rose-400"
+                      className="opacity-0 text-muted-foreground transition-colors group-hover:opacity-100 hover:text-[var(--loss)]"
                       aria-label={t("dashboard.table.deleteTradeAria")}
                     >
                       {t("dashboard.actions.deleteTrade")}
