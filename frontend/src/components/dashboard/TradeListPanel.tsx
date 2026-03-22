@@ -1,6 +1,7 @@
 import { parseISO } from "date-fns";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 import { useAppLanguage } from "@/hooks/useAppLanguage";
 import { cn } from "@/lib/utils";
 import type { DashboardTrade } from "./types";
@@ -19,12 +20,10 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
   );
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-      <div className="flex items-center justify-between border-b border-border p-6">
-        <h3 className="text-base font-semibold text-foreground">
-          {t("dashboard.table.recentTrades")}
-        </h3>
-      </div>
+    <Panel>
+      <PanelHeader separated>
+        <PanelTitle>{t("dashboard.table.recentTrades")}</PanelTitle>
+      </PanelHeader>
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
@@ -113,7 +112,9 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
                   <td className="px-6 py-4 text-right font-mono font-medium">
                     <span
                       className={
-                        trade.pnl >= 0 ? "text-[var(--profit)]" : "text-[var(--loss)]"
+                        trade.pnl >= 0
+                          ? "text-[var(--profit)]"
+                          : "text-[var(--loss)]"
                       }
                     >
                       {trade.pnl >= 0 ? "+" : ""}
@@ -141,6 +142,6 @@ export function TradeListPanel({ trades, onDelete }: TradeListPanelProps) {
           </tbody>
         </table>
       </div>
-    </div>
+    </Panel>
   );
 }

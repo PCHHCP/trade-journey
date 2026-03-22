@@ -140,7 +140,8 @@ export function LandingHeroGlobe() {
       mapBrightness: 10,
       mapBaseBrightness: 0,
       baseColor: resolvedTheme === "dark" ? [0.78, 0.78, 0.78] : [1, 1, 1],
-      markerColor: resolvedTheme === "dark" ? [0.42, 0.36, 0.92] : [0.32, 0.28, 0.85],
+      markerColor:
+        resolvedTheme === "dark" ? [0.42, 0.36, 0.92] : [0.32, 0.28, 0.85],
       glowColor: resolvedTheme === "dark" ? [0.36, 0.26, 0.82] : [0.8, 0.82, 1],
       opacity: 1,
       offset: [0, 0],

@@ -7,9 +7,15 @@ import {
   FileSpreadsheet,
   LoaderCircle,
   Upload,
-  X,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useImportTrades } from "@/hooks/useImportTrades";
@@ -56,21 +62,6 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
       : null;
 
   useEffect(() => {
-    const original = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = original;
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onClose]);
-
-  useEffect(() => {
     if (Object.keys(form.formState.errors).length > 0) {
       void form.trigger();
     }
@@ -104,31 +95,15 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border p-6">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              {t("importPage.hero.title")}
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent variant="panel" size="md" className="max-h-[90vh]">
+        <DialogHeader className="border-b border-border px-6 py-5">
+          <DialogTitle className="text-lg font-semibold text-foreground">
+            {t("importPage.hero.title")}
+          </DialogTitle>
+        </DialogHeader>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto px-6 py-5">
           <form
             className="space-y-5"
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -182,7 +157,6 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
               </div>
             ) : null}
 
-            {/* Result inline */}
             {importTradesMutation.data ? (
               <div className="space-y-3 rounded-lg border border-[var(--profit)]/20 bg-[var(--profit-soft)] p-4">
                 <p className="text-sm font-semibold text-foreground">
@@ -279,7 +253,7 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
             </div>
           </form>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

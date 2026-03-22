@@ -34,7 +34,11 @@ const DATE_FILTERS = [
 
 const fadeIn = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" as const },
+  },
 };
 
 export function Dashboard() {
@@ -233,7 +237,8 @@ export function Dashboard() {
                   {formatRatioPercent(stats.winRate, language)}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {stats.totalTrades} {t("dashboard.stats.totalTrades").toLowerCase()}
+                  {stats.totalTrades}{" "}
+                  {t("dashboard.stats.totalTrades").toLowerCase()}
                 </span>
               </div>
             </div>
@@ -254,7 +259,8 @@ export function Dashboard() {
             {/* Avg Win / Loss */}
             <div className="flex flex-col gap-1 bg-card p-5">
               <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                {t("dashboard.stats.averageWin")} / {t("dashboard.stats.averageLoss")}
+                {t("dashboard.stats.averageWin")} /{" "}
+                {t("dashboard.stats.averageLoss")}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg font-semibold text-[var(--profit)]">
@@ -295,9 +301,7 @@ export function Dashboard() {
         />
       )}
 
-      {isImportOpen && (
-        <ImportDialog onClose={() => setIsImportOpen(false)} />
-      )}
+      {isImportOpen && <ImportDialog onClose={() => setIsImportOpen(false)} />}
     </div>
   );
 }
